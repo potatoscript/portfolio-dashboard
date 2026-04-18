@@ -21,7 +21,7 @@ issues.forEach(issue => {
   const item = {
     number: issue.number,
     title: issue.title,
-    repo: "potatoscript/project-ops"
+    repo: "potatoscript/portfolio"
   };
 
   const user = issue.assignee?.login || "none";
