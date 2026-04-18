@@ -1,12 +1,12 @@
 name: Update Dashboard
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"  # every 30 min
 
 jobs:
-  run:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,17 +14,18 @@ jobs:
 
       - name: Fetch Issues
         run: |
-          curl -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          https://api.github.com/repos/potatoscript/project-ops/issues \
-          > issues.json
+          curl https://api.github.com/repos/${{ github.repository }}/issues > issues.json
 
       - name: Generate JSON
-        run: node generate.js
+        run: |
+          node generate.js
+        env:
+          REPO: ${{ github.repository }}
 
       - name: Commit
         run: |
           git config user.name "bot"
           git config user.email "bot@github.com"
           git add docs/overdue.json
-          git commit -m "update data" || echo "no change"
+          git commit -m "update dashboard" || echo "no change"
           git push
