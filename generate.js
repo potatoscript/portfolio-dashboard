@@ -36,6 +36,11 @@ issues.forEach(issue => {
     urgent.push(item);
     users[user].urgent++;
   }
+
+   if (item.daysOverdue > 2) {
+    await comment(issue, process.env.GH_TOKEN);
+  }
+  
 });
 
 const output = {
