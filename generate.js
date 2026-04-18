@@ -1,5 +1,10 @@
 const fs = require("fs");
 
+// 🔥 ensure folder exists
+if (!fs.existsSync("docs")) {
+  fs.mkdirSync("docs");
+}
+
 const issues = JSON.parse(fs.readFileSync("issues.json"));
 const now = new Date();
 
