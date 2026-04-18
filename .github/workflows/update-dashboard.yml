@@ -1,0 +1,30 @@
+name: Update Dashboard
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Issues
+        run: |
+          curl -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          https://api.github.com/repos/potatoscript/project-ops/issues \
+          > issues.json
+
+      - name: Generate JSON
+        run: node generate.js
+
+      - name: Commit
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add docs/overdue.json
+          git commit -m "update data" || echo "no change"
+          git push
