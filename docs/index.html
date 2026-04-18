@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Health Dashboard</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --ok: #10b981;
+      --border: #1f2933;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui;
+      background: var(--bg);
+      color: var(--text);
+      padding: 1rem;
+    }
+
+    h1 { margin-bottom: 0; }
+    .sub { color: var(--muted); }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+
+    th, td {
+      padding: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th { color: var(--muted); }
+
+    .score { color: var(--warn); font-weight: bold; }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📊 Project Dashboard</h1>
+<p id="generatedAt" class="sub">Loading...</p>
+
+<div class="dashboard">
+
+  <div class="card">
+    <h2>Status</h2>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Overdue</h2>
+    <table><tbody id="overdue"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>Urgent</h2>
+    <table><tbody id="urgent"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>Team Load</h2>
+    <table><tbody id="users"></tbody></table>
+  </div>
+
+</div>
+
+<script>
+fetch("overdue.json")
+.then(r => r.json())
+.then(data => {
+
+  document.getElementById("generatedAt").textContent =
+    "Updated: " + new Date(data.generatedAt).toLocaleString();
+
+  new Chart(document.getElementById("chart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Overdue", "Urgent"],
+      datasets: [{
+        data: [data.overdueCount, data.urgentCount]
+      }]
+    }
+  });
+
+  const fill = (id, arr, fn) => {
+    const el = document.getElementById(id);
+    if (!arr.length) {
+      el.innerHTML = `<tr><td class="empty">No data</td></tr>`;
+      return;
+    }
+    arr.forEach(i => el.innerHTML += fn(i));
+  };
+
+  const link = i =>
+    `<a href="https://github.com/${i.repo}/issues/${i.number}" target="_blank">#${i.number}</a>`;
+
+  fill("overdue", data.topOverdue, i =>
+    `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysOverdue}d</td></tr>`);
+
+  fill("urgent", data.urgentItems, i =>
+    `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysLeft}d</td></tr>`);
+
+  fill("users", data.overloadedUsers, u =>
+    `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td><td class="score">${u.score}</td></tr>`);
+
+});
+</script>
+
+</body>
+</html>
