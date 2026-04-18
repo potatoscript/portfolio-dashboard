@@ -1,3 +1,4 @@
+console.log("🚀 GENERATE.JS IS RUNNING");
 const fs = require("fs");
 
 fs.writeFileSync("docs/overdue.json", JSON.stringify({
