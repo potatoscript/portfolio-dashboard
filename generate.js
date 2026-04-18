@@ -1,57 +1,56 @@
-console.log("🚀 GENERATE.JS IS RUNNING");
 const fs = require("fs");
 
-fs.writeFileSync("docs/overdue.json", JSON.stringify({
-  status: "OK",
-  time: new Date().toISOString()
-}, null, 2));
+// 👇 wrap everything
+async function main() {
 
-console.log("FILE WRITTEN");
+  const issues = JSON.parse(fs.readFileSync("issues.json"));
+  const now = new Date();
 
-// 🔥 ensure folder exists
-if (!fs.existsSync("docs")) {
-  fs.mkdirSync("docs");
-}
+  const overdue = [];
+  const urgent = [];
 
-const issues = JSON.parse(fs.readFileSync("issues.json"));
-const now = new Date();
+  for (const issue of issues) {
 
-const overdue = [];
-const urgent = [];
+    if (issue.pull_request) continue;
 
-issues.forEach(issue => {
-  if (issue.pull_request) return;
+    const body = issue.body || "";
+    const match = body.match(/(\d{4}-\d{2}-\d{2})/);
+    if (!match) continue;
 
-  const body = issue.body || "";
-  const match = body.match(/(\d{4}-\d{2}-\d{2})/);
+    const due = new Date(match[1]);
+    const diff = Math.floor((due - now) / (1000 * 60 * 60 * 24));
 
-  if (!match) return;
+    const item = {
+      number: issue.number,
+      title: issue.title,
+      repo: process.env.REPO
+    };
 
-  const due = new Date(match[1]);
-  const diff = Math.floor((due - now) / (1000 * 60 * 60 * 24));
+    if (diff < 0) {
+      item.daysOverdue = Math.abs(diff);
+      overdue.push(item);
 
-  const item = {
-    number: issue.number,
-    title: issue.title,
-    repo: process.env.REPO
+      // ✅ NOW this works
+      // await comment(issue, process.env.GH_TOKEN);
+    } else if (diff <= 3) {
+      item.daysLeft = diff;
+      urgent.push(item);
+    }
+  }
+
+  const output = {
+    generatedAt: new Date().toISOString(),
+    overdueCount: overdue.length,
+    urgentCount: urgent.length,
+    topOverdue: overdue,
+    urgentItems: urgent,
+    overloadedUsers: []
   };
 
-  if (diff < 0) {
-    item.daysOverdue = Math.abs(diff);
-    overdue.push(item);
-  } else if (diff <= 3) {
-    item.daysLeft = diff;
-    urgent.push(item);
-  }
-});
+  fs.writeFileSync("docs/overdue.json", JSON.stringify(output, null, 2));
 
-const output = {
-  generatedAt: new Date().toISOString(),
-  overdueCount: overdue.length,
-  urgentCount: urgent.length,
-  topOverdue: overdue,
-  urgentItems: urgent,
-  overloadedUsers: []
-};
+  console.log("✅ JSON GENERATED");
+}
 
-fs.writeFileSync("docs/overdue.json", JSON.stringify(output, null, 2));
+// 👇 run it
+main();
