@@ -5,7 +5,6 @@ const now = new Date();
 
 const overdue = [];
 const urgent = [];
-const users = {};
 
 issues.forEach(issue => {
   if (issue.pull_request) return;
@@ -21,40 +20,25 @@ issues.forEach(issue => {
   const item = {
     number: issue.number,
     title: issue.title,
-    repo: "potatoscript/portfolio"
+    repo: process.env.REPO
   };
-
-  const user = issue.assignee?.login || "none";
-  users[user] = users[user] || { overdue: 0, urgent: 0 };
 
   if (diff < 0) {
     item.daysOverdue = Math.abs(diff);
     overdue.push(item);
-    users[user].overdue++;
   } else if (diff <= 3) {
     item.daysLeft = diff;
     urgent.push(item);
-    users[user].urgent++;
   }
-
-   if (item.daysOverdue > 2) {
-    await comment(issue, process.env.GH_TOKEN);
-  }
-  
 });
 
 const output = {
   generatedAt: new Date().toISOString(),
   overdueCount: overdue.length,
   urgentCount: urgent.length,
-  topOverdue: overdue.slice(0, 5),
-  urgentItems: urgent.slice(0, 5),
-  overloadedUsers: Object.entries(users).map(([u,v]) => ({
-    user: u,
-    overdue: v.overdue,
-    urgent: v.urgent,
-    score: v.overdue * 2 + v.urgent
-  }))
+  topOverdue: overdue,
+  urgentItems: urgent,
+  overloadedUsers: []
 };
 
 fs.writeFileSync("docs/overdue.json", JSON.stringify(output, null, 2));
