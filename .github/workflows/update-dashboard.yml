@@ -3,7 +3,10 @@ name: Update Dashboard
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"  # every 30 min
+    - cron: "*/30 * * * *"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -12,13 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
       - name: Fetch Issues
         run: |
           curl https://api.github.com/repos/${{ github.repository }}/issues > issues.json
 
       - name: Generate JSON
-        run: |
-          node generate.js
+        run: node generate.js
         env:
           REPO: ${{ github.repository }}
 
