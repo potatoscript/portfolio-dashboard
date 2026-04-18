@@ -1,5 +1,12 @@
 const fs = require("fs");
 
+fs.writeFileSync("docs/overdue.json", JSON.stringify({
+  status: "OK",
+  time: new Date().toISOString()
+}, null, 2));
+
+console.log("FILE WRITTEN");
+
 // 🔥 ensure folder exists
 if (!fs.existsSync("docs")) {
   fs.mkdirSync("docs");
