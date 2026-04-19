@@ -1,69 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Project Health Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Project Dashboard</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --danger: #ef4444;
-      --warn: #f59e0b;
-      --ok: #10b981;
-      --border: #1f2933;
-    }
+<style>
+:root {
+  --bg:#0f172a;
+  --card:#111827;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --danger:#ef4444;
+  --warn:#f59e0b;
+  --ok:#10b981;
+  --border:#1f2933;
+}
 
-    body {
-      margin: 0;
-      font-family: system-ui;
-      background: var(--bg);
-      color: var(--text);
-      padding: 1rem;
-    }
+body {
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
+  color:var(--text);
+  padding:1rem;
+}
 
-    h1 { margin-bottom: 0; }
-    .sub { color: var(--muted); }
+h1 { margin-bottom:0; }
+.sub { color:var(--muted); }
 
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
+.dashboard {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:1rem;
+  margin-top:1rem;
+}
 
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1rem;
-      border: 1px solid var(--border);
-    }
+.card {
+  background:var(--card);
+  border-radius:12px;
+  padding:1rem;
+  border:1px solid var(--border);
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: .9rem;
-    }
+canvas {
+  margin-bottom:10px;
+}
 
-    th, td {
-      padding: .5rem;
-      border-bottom: 1px solid var(--border);
-    }
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.9rem;
+}
 
-    th { color: var(--muted); }
+th, td {
+  padding:.5rem;
+  border-bottom:1px solid var(--border);
+}
 
-    .score { color: var(--warn); font-weight: bold; }
+th { color:var(--muted); }
 
-    .empty {
-      color: var(--muted);
-      font-style: italic;
-    }
-  </style>
+.score { color:var(--warn); font-weight:bold; }
+
+.empty {
+  color:var(--muted);
+  font-style:italic;
+}
+</style>
 </head>
 
 <body>
@@ -75,7 +79,7 @@
 
   <div class="card">
     <h2>Status</h2>
-    <canvas id="chart"></canvas>
+    <canvas id="statusChart"></canvas>
   </div>
 
   <div class="card">
@@ -103,55 +107,108 @@ fetch("overdue.json")
 .then(r => r.json())
 .then(data => {
 
+  // =====================
+  // HEADER
+  // =====================
   document.getElementById("generatedAt").textContent =
     "Updated: " + new Date(data.generatedAt).toLocaleString();
 
+  // =====================
+  // SAFE DATA
+  // =====================
+  const overdueCount = data.overdueCount || 0;
+  const urgentCount  = data.urgentCount || 0;
 
-  new Chart(document.getElementById("overdueChart"), {
-  type: "bar",
-  data: {
-    labels: data.topOverdue.map(i => "#" + i.number),
-    datasets: [{
-      label: "Days Overdue",
-      data: data.topOverdue.map(i => i.daysOverdue)
-    }]
+  // =====================
+  // STATUS CHART (FIXED)
+  // =====================
+  if (overdueCount + urgentCount > 0) {
+    new Chart(document.getElementById("statusChart"), {
+      type: "doughnut",
+      data: {
+        labels: ["Overdue", "Urgent"],
+        datasets: [{
+          data: [
+            overdueCount,
+            urgentCount === 0 ? 0.1 : urgentCount
+          ],
+          backgroundColor: ["#ef4444", "#f59e0b"]
+        }]
+      }
+    });
   }
-});
-  
-  new Chart(document.getElementById("urgentChart"), {
-  type: "bar",
-  data: {
-    labels: data.urgentItems.map(i => "#" + i.number),
-    datasets: [{
-      label: "Days Left",
-      data: data.urgentItems.map(i => i.daysLeft)
-    }]
-  }
-});
 
+  // =====================
+  // OVERDUE CHART
+  // =====================
+  if (data.topOverdue?.length) {
+    new Chart(document.getElementById("overdueChart"), {
+      type: "bar",
+      data: {
+        labels: data.topOverdue.map(i => "#" + i.number),
+        datasets: [{
+          label: "Days Overdue",
+          data: data.topOverdue.map(i => i.daysOverdue)
+        }]
+      }
+    });
+  }
+
+  // =====================
+  // URGENT CHART
+  // =====================
+  if (data.urgentItems?.length) {
+    new Chart(document.getElementById("urgentChart"), {
+      type: "bar",
+      data: {
+        labels: data.urgentItems.map(i => "#" + i.number),
+        datasets: [{
+          label: "Days Left",
+          data: data.urgentItems.map(i => Math.max(i.daysLeft, 1))
+        }]
+      }
+    });
+  }
+
+  // =====================
+  // USER CHART
+  // =====================
+  if (data.overloadedUsers?.length) {
+    new Chart(document.getElementById("userChart"), {
+      type: "bar",
+      data: {
+        labels: data.overloadedUsers.map(u => u.user),
+        datasets: [{
+          label: "Score",
+          data: data.overloadedUsers.map(u => u.score)
+        }]
+      }
+    });
+  }
+
+  // =====================
+  // TABLE HELPERS
+  // =====================
   const fill = (id, arr, fn) => {
     const el = document.getElementById(id);
-    if (!arr.length) {
+    el.innerHTML = "";
+
+    if (!arr || !arr.length) {
       el.innerHTML = `<tr><td class="empty">No data</td></tr>`;
       return;
     }
-    arr.forEach(i => el.innerHTML += fn(i));
-  };
 
-  new Chart(document.getElementById("userChart"), {
-  type: "bar",
-  data: {
-    labels: data.overloadedUsers.map(u => u.user),
-    datasets: [{
-      label: "Score",
-      data: data.overloadedUsers.map(u => u.score)
-    }]
-  }
-});
+    arr.forEach(i => {
+      el.insertAdjacentHTML("beforeend", fn(i));
+    });
+  };
 
   const link = i =>
     `<a href="https://github.com/${i.repo}/issues/${i.number}" target="_blank">#${i.number}</a>`;
 
+  // =====================
+  // TABLES
+  // =====================
   fill("overdue", data.topOverdue, i =>
     `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysOverdue}d</td></tr>`);
 
@@ -161,6 +218,11 @@ fetch("overdue.json")
   fill("users", data.overloadedUsers, u =>
     `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td><td class="score">${u.score}</td></tr>`);
 
+})
+.catch(err => {
+  console.error(err);
+  document.getElementById("generatedAt").textContent =
+    "Failed to load dashboard data";
 });
 </script>
 
