@@ -13,25 +13,95 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # =====================
+      # Checkout
+      # =====================
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      # =====================
+      # Setup Node
+      # =====================
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Fetch Issues
+      # =====================
+      # Fetch Project Data (GraphQL)
+      # =====================
+      - name: Fetch project data
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          curl https://api.github.com/repos/${{ github.repository }}/issues > issues.json
+          echo "📡 Fetching project data..."
 
+          curl -s -X POST https://api.github.com/graphql \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "query": "query {
+                viewer {
+                  projectsV2(first: 10) {
+                    nodes {
+                      title
+                      items(first: 50) {
+                        nodes {
+                          content {
+                            ... on Issue {
+                              number
+                              title
+                              url
+                              assignees(first: 1) {
+                                nodes { login }
+                              }
+                            }
+                          }
+                          fieldValues(first: 20) {
+                            nodes {
+                              ... on ProjectV2ItemFieldDateValue {
+                                field { name }
+                                date
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }"
+            }' > project.json
+
+          echo "📄 Project JSON preview:"
+          head -n 20 project.json
+
+      # =====================
+      # Generate Dashboard JSON
+      # =====================
       - name: Generate JSON
         run: node generate.js
         env:
           REPO: ${{ github.repository }}
 
-      - name: Commit
+      # =====================
+      # Debug Output
+      # =====================
+      - name: Show generated JSON
         run: |
-          git config user.name "bot"
-          git config user.email "bot@github.com"
+          echo "📊 Generated overdue.json:"
+          cat docs/overdue.json
+
+      # =====================
+      # Commit & Push
+      # =====================
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
           git add docs/overdue.json
+
           git commit -m "update dashboard" || echo "no change"
-          git push
+
+          git push origin HEAD:main
