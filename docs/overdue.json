@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T00:00:08.705Z",
+  "generatedAt": "2026-04-19T00:03:44.288Z",
   "overdueCount": 1,
   "urgentCount": 1,
   "topOverdue": [
@@ -7,6 +7,7 @@
       "number": 1,
       "title": "Test Overdue",
       "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
       "daysOverdue": 109
     }
   ],
@@ -15,8 +16,17 @@
       "number": 2,
       "title": "Test Urgent",
       "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
       "daysLeft": 0
     }
   ],
-  "overloadedUsers": []
+  "overloadedUsers": [
+    {
+      "user": "unassigned",
+      "overdue": 1,
+      "urgent": 1,
+      "total": 3,
+      "score": 3
+    }
+  ]
 }
