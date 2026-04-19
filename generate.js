@@ -1,56 +1,145 @@
 const fs = require("fs");
 
-// 👇 wrap everything
+// =======================
+// 🔧 CONFIG
+// =======================
+
+// Use current repo by default
+const repos = [process.env.REPO];
+
+// =======================
+// 🚀 MAIN
+// =======================
+
 async function main() {
+  try {
+    const issues = JSON.parse(fs.readFileSync("issues.json"));
 
-  const issues = JSON.parse(fs.readFileSync("issues.json"));
-  const now = new Date();
+    console.log("📦 Issues fetched:", issues.length);
 
-  const overdue = [];
-  const urgent = [];
+    const now = new Date();
 
-  for (const issue of issues) {
+    const overdue = [];
+    const urgent = [];
+    const users = {};
 
-    if (issue.pull_request) continue;
+    for (const issue of issues) {
+      if (issue.pull_request) continue;
 
-    const body = issue.body || "";
-    const match = body.match(/(\d{4}-\d{2}-\d{2})/);
-    if (!match) continue;
+      const body = issue.body || "";
 
-    const due = new Date(match[1]);
-    const diff = Math.floor((due - now) / (1000 * 60 * 60 * 24));
+      // ✅ safer parsing
+      const match = body.match(/Due Date:\s*(\d{4}-\d{2}-\d{2})/);
+      if (!match) continue;
 
-    const item = {
-      number: issue.number,
-      title: issue.title,
-      repo: process.env.REPO
+      const due = new Date(match[1]);
+      const diff = Math.floor((due - now) / (1000 * 60 * 60 * 24));
+
+      const item = {
+        number: issue.number,
+        title: issue.title,
+        repo: process.env.REPO,
+        url: issue.html_url
+      };
+
+      const user = issue.assignee?.login || "unassigned";
+
+      if (!users[user]) {
+        users[user] = {
+          overdue: 0,
+          urgent: 0,
+          total: 0
+        };
+      }
+
+      users[user].total++;
+
+      // =======================
+      // 📊 CLASSIFICATION
+      // =======================
+
+      if (diff < 0) {
+        item.daysOverdue = Math.abs(diff);
+        overdue.push(item);
+        users[user].overdue++;
+
+      } else if (diff <= 3) {
+        item.daysLeft = diff;
+        urgent.push(item);
+        users[user].urgent++;
+      }
+    }
+
+    // =======================
+    // 👤 TEAM LOAD
+    // =======================
+
+    const overloadedUsers = Object.entries(users).map(([user, u]) => ({
+      user,
+      overdue: u.overdue,
+      urgent: u.urgent,
+      total: u.total,
+      score: u.overdue * 2 + u.urgent
+    }))
+    .sort((a, b) => b.score - a.score);
+
+    // =======================
+    // 📤 OUTPUT
+    // =======================
+
+    const output = {
+      generatedAt: new Date().toISOString(),
+
+      overdueCount: overdue.length,
+      urgentCount: urgent.length,
+
+      topOverdue: overdue
+        .sort((a, b) => b.daysOverdue - a.daysOverdue)
+        .slice(0, 5),
+
+      urgentItems: urgent
+        .sort((a, b) => a.daysLeft - b.daysLeft)
+        .slice(0, 5),
+
+      overloadedUsers: overloadedUsers.slice(0, 10)
     };
 
-    if (diff < 0) {
-      item.daysOverdue = Math.abs(diff);
-      overdue.push(item);
+    // =======================
+    // 🛡️ SAFE WRITE
+    // =======================
 
-      // ✅ NOW this works
-      // await comment(issue, process.env.GH_TOKEN);
-    } else if (diff <= 3) {
-      item.daysLeft = diff;
-      urgent.push(item);
+    if (!fs.existsSync("docs")) {
+      fs.mkdirSync("docs");
     }
+
+    fs.writeFileSync(
+      "docs/overdue.json",
+      JSON.stringify(output, null, 2)
+    );
+
+    console.log("✅ Dashboard JSON updated");
+
+  } catch (err) {
+    console.error("❌ ERROR:", err);
+
+    // Always write fallback JSON
+    fs.writeFileSync(
+      "docs/overdue.json",
+      JSON.stringify({
+        generatedAt: new Date().toISOString(),
+        overdueCount: 0,
+        urgentCount: 0,
+        topOverdue: [],
+        urgentItems: [],
+        overloadedUsers: [],
+        error: "Failed to generate data"
+      }, null, 2)
+    );
   }
-
-  const output = {
-    generatedAt: new Date().toISOString(),
-    overdueCount: overdue.length,
-    urgentCount: urgent.length,
-    topOverdue: overdue,
-    urgentItems: urgent,
-    overloadedUsers: []
-  };
-
-  fs.writeFileSync("docs/overdue.json", JSON.stringify(output, null, 2));
-
-  console.log("✅ JSON GENERATED");
 }
 
-// 👇 run it
+// =======================
+// ▶️ RUN
+// =======================
+
 main();
