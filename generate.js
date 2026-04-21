@@ -1,6 +1,4 @@
 const fs = require("fs");
-
-// Node fetch safety
 const fetch = global.fetch || require("node-fetch");
 
 // =======================
@@ -11,21 +9,24 @@ const REPO = process.env.REPO;
 const TOKEN = process.env.GH_TOKEN;
 
 // =======================
-// 💬 COMMENT FUNCTION
+// 💬 COMMENT (ANTI-SPAM SAFE)
 // =======================
 
 async function comment(issue, message) {
   if (!TOKEN) return;
 
   try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/issues/${issue.number}/comments`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ body: message })
-    });
+    const res = await fetch(
+      `https://api.github.com/repos/${REPO}/issues/${issue.number}/comments`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ body: message })
+      }
+    );
 
     if (!res.ok) {
       console.error("❌ Comment failed:", issue.number);
@@ -34,6 +35,56 @@ async function comment(issue, message) {
   } catch (err) {
     console.error("❌ Comment error:", err);
   }
+}
+
+// =======================
+// 🧠 AI RISK SCORING
+// =======================
+
+function calculateRisk(diff, inactiveDays) {
+  return (
+    (diff < 0 ? 3 : 0) +                       // overdue
+    (diff >= 0 && diff <= 2 ? 2 : 0) +         // near deadline
+    (inactiveDays > 3 ? 2 : 0)                 // inactive
+  );
+}
+
+// =======================
+// 📊 CLASSIFICATION
+// =======================
+
+function classify(diff, item, issue, userStats, user) {
+  if (diff < 0) {
+    item.daysOverdue = Math.abs(diff);
+    userStats.overdue++;
+
+    // 🔥 Anti-spam: only once (day 1 overdue)
+    if (item.daysOverdue === 1) {
+      return { type: "overdue", notify: true };
+    }
+
+    return { type: "overdue", notify: false };
+
+  } else if (diff <= 3) {
+    item.daysLeft = diff;
+    userStats.urgent++;
+    return { type: "urgent", notify: false };
+  }
+
+  return { type: "normal", notify: false };
+}
+
+// =======================
+// 📅 PARSE DUE DATE
+// =======================
+
+function parseDueDate(issue) {
+  const body = issue.body || "";
+  const match = body.match(/Due Date:\s*(\d{4}-\d{2}-\d{2})/);
+
+  if (!match) return null;
+
+  return new Date(match[1]);
 }
 
 // =======================
@@ -57,15 +108,12 @@ async function main() {
 
       if (issue.pull_request) continue;
 
-      const body = issue.body || "";
-
       // =======================
-      // 📅 PARSE DUE DATE
+      // 📅 DUE DATE
       // =======================
-      const match = body.match(/Due Date:\s*(\d{4}-\d{2}-\d{2})/);
-      if (!match) continue;
+      const due = parseDueDate(issue);
+      if (!due) continue;
 
-      const due = new Date(match[1]);
       const diff = Math.floor((due - now) / 86400000);
 
       const item = {
@@ -76,16 +124,13 @@ async function main() {
       };
 
       // =======================
-      // 🤖 AI RISK SCORING
+      // 🤖 AI LOGIC
       // =======================
 
       const updated = new Date(issue.updated_at || issue.created_at);
       const inactiveDays = Math.floor((now - updated) / 86400000);
 
-      const risk =
-        (diff < 0 ? 3 : 0) +
-        (diff >= 0 && diff <= 2 ? 2 : 0) +
-        (inactiveDays > 3 ? 2 : 0);
+      const risk = calculateRisk(diff, inactiveDays);
 
       item.risk = risk;
 
@@ -101,11 +146,7 @@ async function main() {
       const user = issue.assignee?.login || "unassigned";
 
       if (!users[user]) {
-        users[user] = {
-          overdue: 0,
-          urgent: 0,
-          total: 0
-        };
+        users[user] = { overdue: 0, urgent: 0, total: 0 };
       }
 
       users[user].total++;
@@ -114,21 +155,18 @@ async function main() {
       // 📊 CLASSIFICATION
       // =======================
 
-      if (diff < 0) {
-        item.daysOverdue = Math.abs(diff);
-        overdue.push(item);
-        users[user].overdue++;
+      const result = classify(diff, item, issue, users[user], user);
 
-        // 🔥 Anti-spam comment (only first day overdue)
-        if (item.daysOverdue === 1) {
+      if (result.type === "overdue") {
+        overdue.push(item);
+
+        if (result.notify) {
           await comment(issue,
             `⚠️ This issue is overdue. Please take action.`);
         }
 
-      } else if (diff <= 3) {
-        item.daysLeft = diff;
+      } else if (result.type === "urgent") {
         urgent.push(item);
-        users[user].urgent++;
       }
     }
 
@@ -145,6 +183,23 @@ async function main() {
         score: u.overdue * 2 + u.urgent
       }))
       .sort((a, b) => b.score - a.score);
+
+    // =======================
+    // 📊 TIMELINE HEALTH (NEW)
+    // =======================
+
+    const timeline = [...overdue, ...urgent].map(i => {
+      let status = "on-track";
+
+      if (i.daysOverdue) status = "delayed";
+      else if (i.daysLeft <= 2) status = "at-risk";
+
+      return {
+        number: i.number,
+        title: i.title,
+        status
+      };
+    });
 
     // =======================
     // 📤 OUTPUT
@@ -166,7 +221,9 @@ async function main() {
 
       overloadedUsers: overloadedUsers.slice(0, 10),
 
-      predictions: predictions.slice(0, 5)
+      predictions: predictions.slice(0, 5),
+
+      timeline: timeline.slice(0, 10)
     };
 
     // =======================
@@ -197,6 +254,7 @@ async function main() {
         urgentItems: [],
         overloadedUsers: [],
         predictions: [],
+        timeline: [],
         error: "Failed to generate data"
       }, null, 2)
     );
