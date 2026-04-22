@@ -57,12 +57,13 @@ async function main() {
     const raw = JSON.parse(fs.readFileSync("project.json"));
 
     // 🔥 SAFE ACCESS
-    const projects = raw?.data?.repository?.projectsV2?.nodes || [];
+    const projects = raw?.data?.viewer?.projectsV2?.nodes || [];
 
-    const project = projects.find(p =>
-      p.title === "portfolio-dashboard" || 
-      p.title === "Portfolio Dashboard Timeline"
-    );
+    const project = projects[0];
+    
+    if (!project) {
+      throw new Error("No project found in viewer.projectsV2");
+    }
     
     if (!project) {
       console.log("Available projects:");
