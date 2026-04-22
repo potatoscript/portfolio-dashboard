@@ -1,11 +1,46 @@
 {
-  "generatedAt": "2026-04-22T10:47:38.320Z",
-  "overdueCount": 0,
+  "generatedAt": "2026-04-22T10:53:17.149Z",
+  "overdueCount": 2,
   "urgentCount": 0,
-  "topOverdue": [],
+  "topOverdue": [
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
+      "risk": 3,
+      "daysOverdue": 22
+    },
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
+      "risk": 3,
+      "daysOverdue": 3
+    }
+  ],
   "urgentItems": [],
-  "overloadedUsers": [],
+  "overloadedUsers": [
+    {
+      "user": "potatoscript",
+      "overdue": 2,
+      "urgent": 0,
+      "total": 3,
+      "score": 4
+    }
+  ],
   "predictions": [],
-  "timeline": [],
-  "error": "Failed to generate data"
+  "timeline": [
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "status": "delayed"
+    },
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "status": "delayed"
+    }
+  ]
 }
