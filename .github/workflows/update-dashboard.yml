@@ -36,35 +36,32 @@ jobs:
         run: |
           echo "📡 Fetching project data..."
       
-          curl -s -X POST https://api.github.com/graphql \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "query": "query {
-                viewer {
-                  projectsV2(first: 10) {
-                    nodes {
-                      title
-                      items(first: 100) {
-                        nodes {
-                          content {
-                            ... on Issue {
-                              number
-                              title
-                              url
-                              updatedAt
-                              createdAt
-                              assignees(first: 1) {
-                                nodes { login }
-                              }
+          cat <<EOF > query.json
+          {
+            "query": "query {
+              viewer {
+                projectsV2(first: 10) {
+                  nodes {
+                    title
+                    items(first: 100) {
+                      nodes {
+                        content {
+                          ... on Issue {
+                            number
+                            title
+                            url
+                            updatedAt
+                            createdAt
+                            assignees(first: 1) {
+                              nodes { login }
                             }
                           }
-                          fieldValues(first: 20) {
-                            nodes {
-                              ... on ProjectV2ItemFieldDateValue {
-                                field { name }
-                                date
-                              }
+                        }
+                        fieldValues(first: 20) {
+                          nodes {
+                            ... on ProjectV2ItemFieldDateValue {
+                              field { name }
+                              date
                             }
                           }
                         }
@@ -72,10 +69,17 @@ jobs:
                     }
                   }
                 }
-              }"
-            }' > project.json
+              }
+            }"
+          }
+          EOF
       
-          echo "📄 DEBUG:"
+          curl -s -X POST https://api.github.com/graphql \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @query.json > project.json
+      
+          echo "📄 DEBUG RESPONSE:"
           cat project.json
 
       # =====================
