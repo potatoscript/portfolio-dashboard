@@ -60,8 +60,12 @@ jobs:
                         fieldValues(first: 20) {
                           nodes {
                             ... on ProjectV2ItemFieldDateValue {
-                              field { name }
                               date
+                              field {
+                                ... on ProjectV2FieldCommon {
+                                  name
+                                }
+                              }
                             }
                           }
                         }
