@@ -1,152 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Project Health Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolio Project Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
-  --bg:#0b1220;
-  --card:#111827;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-  --border:#1f2937;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
+
   --danger:#ef4444;
   --warn:#f59e0b;
   --ok:#10b981;
+  --primary:#6366f1;
 }
 
 body {
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
   background:var(--bg);
   color:var(--text);
+  padding:2rem;
 }
 
-/* HEADER */
-.header {
-  padding:20px;
-  border-bottom:1px solid var(--border);
-}
-
-.header h1 {
+h1 {
   margin:0;
-  font-size:20px;
+  font-size:28px;
 }
 
 .sub {
   color:var(--muted);
-  font-size:13px;
+  margin-bottom:20px;
 }
 
-/* KPI STRIP */
+/* ===================== */
+/* KPI CARDS */
+/* ===================== */
 .kpis {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:16px;
-  padding:20px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1rem;
+  margin-bottom:1.5rem;
 }
 
 .kpi {
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:12px;
-  padding:16px;
+  border-radius:14px;
+  padding:1rem;
 }
 
-.kpi .label {
-  font-size:12px;
+.kpi h3 {
+  margin:0;
+  font-size:14px;
   color:var(--muted);
 }
 
 .kpi .value {
   font-size:26px;
   font-weight:bold;
-  margin-top:6px;
+  margin-top:5px;
 }
 
+/* ===================== */
 /* GRID */
-.grid {
+/* ===================== */
+.dashboard {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
-  gap:20px;
-  padding:20px;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:1rem;
 }
 
-/* CARD */
 .card {
   background:var(--card);
+  border-radius:14px;
+  padding:1rem;
   border:1px solid var(--border);
-  border-radius:12px;
-  padding:16px;
 }
 
 .card h2 {
-  margin:0 0 10px 0;
-  font-size:16px;
+  margin-top:0;
+  font-size:18px;
 }
 
+/* ===================== */
 /* TABLE */
+/* ===================== */
 table {
   width:100%;
   border-collapse:collapse;
-  font-size:13px;
+  font-size:.9rem;
+}
+
+th, td {
+  padding:.6rem;
+  border-bottom:1px solid var(--border);
 }
 
 th {
   text-align:left;
   color:var(--muted);
-  padding:8px 6px;
 }
 
-td {
-  padding:8px 6px;
-  border-top:1px solid var(--border);
-}
-
-/* BADGES */
 .badge {
   padding:3px 8px;
-  border-radius:6px;
-  font-size:11px;
+  border-radius:8px;
+  font-size:12px;
   font-weight:600;
 }
 
-.badge.red { background:#7f1d1d; color:#fecaca; }
-.badge.orange { background:#78350f; color:#fde68a; }
-.badge.green { background:#064e3b; color:#6ee7b7; }
+.badge-danger { background:#fee2e2; color:#b91c1c; }
+.badge-warn   { background:#fef3c7; color:#92400e; }
+.badge-ok     { background:#dcfce7; color:#166534; }
+
+.progress {
+  height:6px;
+  background:#e5e7eb;
+  border-radius:4px;
+  overflow:hidden;
+}
+
+.progress div {
+  height:100%;
+  background:var(--primary);
+}
 
 .empty {
   color:var(--muted);
   font-style:italic;
-  padding:10px;
 }
 
-canvas {
-  margin-bottom:10px;
+a {
+  color:var(--primary);
+  text-decoration:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <h1>📊 Project Health Dashboard</h1>
-  <div id="generatedAt" class="sub">Loading...</div>
-</div>
+<h1>📊 Project Dashboard</h1>
+<p id="generatedAt" class="sub">Loading...</p>
 
 <!-- KPI -->
 <div class="kpis">
-  <div class="kpi"><div class="label">Overdue</div><div id="kpiOverdue" class="value">0</div></div>
-  <div class="kpi"><div class="label">Urgent</div><div id="kpiUrgent" class="value">0</div></div>
-  <div class="kpi"><div class="label">At Risk</div><div id="kpiRisk" class="value">0</div></div>
-  <div class="kpi"><div class="label">Team Members</div><div id="kpiUsers" class="value">0</div></div>
+  <div class="kpi">
+    <h3>Overdue</h3>
+    <div id="kpiOverdue" class="value">0</div>
+  </div>
+  <div class="kpi">
+    <h3>Urgent</h3>
+    <div id="kpiUrgent" class="value">0</div>
+  </div>
+  <div class="kpi">
+    <h3>At Risk</h3>
+    <div id="kpiRisk" class="value">0</div>
+  </div>
+  <div class="kpi">
+    <h3>Total Tasks</h3>
+    <div id="kpiTotal" class="value">0</div>
+  </div>
 </div>
 
-<div class="grid">
+<div class="dashboard">
 
   <!-- STATUS -->
   <div class="card">
@@ -160,7 +182,7 @@ canvas {
     <canvas id="overdueChart"></canvas>
     <table>
       <thead>
-        <tr><th>Issue</th><th>Title</th><th>Days</th></tr>
+        <tr><th>ID</th><th>Title</th><th>Days</th></tr>
       </thead>
       <tbody id="overdue"></tbody>
     </table>
@@ -172,7 +194,7 @@ canvas {
     <canvas id="urgentChart"></canvas>
     <table>
       <thead>
-        <tr><th>Issue</th><th>Title</th><th>Days Left</th></tr>
+        <tr><th>ID</th><th>Title</th><th>Days Left</th></tr>
       </thead>
       <tbody id="urgent"></tbody>
     </table>
@@ -190,12 +212,12 @@ canvas {
     </table>
   </div>
 
-  <!-- AI -->
+  <!-- PREDICTIONS -->
   <div class="card">
-    <h2>AI Risk Prediction</h2>
+    <h2>⚠️ AI Predictions</h2>
     <table>
       <thead>
-        <tr><th>Issue</th><th>Title</th><th>Status</th></tr>
+        <tr><th>ID</th><th>Title</th><th>Risk</th></tr>
       </thead>
       <tbody id="predictions"></tbody>
     </table>
@@ -203,10 +225,10 @@ canvas {
 
   <!-- TIMELINE -->
   <div class="card">
-    <h2>Timeline Health</h2>
+    <h2>📅 Timeline Health</h2>
     <table>
       <thead>
-        <tr><th>Issue</th><th>Title</th><th>Status</th></tr>
+        <tr><th>ID</th><th>Title</th><th>Status</th><th>Progress</th></tr>
       </thead>
       <tbody id="timeline"></tbody>
     </table>
@@ -223,61 +245,40 @@ fetch("overdue.json")
     "Updated: " + new Date(data.generatedAt).toLocaleString();
 
   // KPI
-  kpiOverdue.textContent = data.overdueCount || 0;
-  kpiUrgent.textContent = data.urgentCount || 0;
-  kpiRisk.textContent = data.predictions?.length || 0;
-  kpiUsers.textContent = data.overloadedUsers?.length || 0;
+  document.getElementById("kpiOverdue").textContent = data.overdueCount || 0;
+  document.getElementById("kpiUrgent").textContent = data.urgentCount || 0;
+  document.getElementById("kpiRisk").textContent = data.predictions?.length || 0;
+  document.getElementById("kpiTotal").textContent =
+    (data.overdueCount || 0) + (data.urgentCount || 0);
 
   // STATUS CHART
-  new Chart(statusChart, {
-    type:"doughnut",
-    data:{
-      labels:["Overdue","Urgent"],
-      datasets:[{
-        data:[data.overdueCount||0, data.urgentCount||0],
-        backgroundColor:["#ef4444","#f59e0b"]
+  new Chart(document.getElementById("statusChart"), {
+    type: "doughnut",
+    data: {
+      labels: ["Overdue","Urgent"],
+      datasets: [{
+        data: [data.overdueCount || 0, data.urgentCount || 0]
       }]
     }
   });
 
-  // CHART HELPER
-  const bar = (id, labels, values) => {
-    if (!labels.length) return;
-    new Chart(document.getElementById(id), {
-      type:"bar",
-      data:{ labels, datasets:[{ data:values }] }
-    });
-  };
-
-  bar("overdueChart",
-    data.topOverdue.map(i=>"#"+i.number),
-    data.topOverdue.map(i=>i.daysOverdue)
-  );
-
-  bar("urgentChart",
-    data.urgentItems.map(i=>"#"+i.number),
-    data.urgentItems.map(i=>i.daysLeft)
-  );
-
-  bar("userChart",
-    data.overloadedUsers.map(u=>u.user),
-    data.overloadedUsers.map(u=>u.score)
-  );
-
-  // TABLE HELPER
+  // HELPERS
   const fill = (id, arr, fn) => {
     const el = document.getElementById(id);
-    el.innerHTML="";
-    if (!arr?.length) {
-      el.innerHTML=`<tr><td class="empty">No data</td></tr>`;
+    el.innerHTML = "";
+
+    if (!arr || !arr.length) {
+      el.innerHTML = `<tr><td colspan="4" class="empty">No data</td></tr>`;
       return;
     }
-    arr.forEach(i=>el.insertAdjacentHTML("beforeend", fn(i)));
+
+    arr.forEach(i => el.insertAdjacentHTML("beforeend", fn(i)));
   };
 
   const link = i =>
     `<a href="https://github.com/${i.repo}/issues/${i.number}" target="_blank">#${i.number}</a>`;
 
+  // TABLES
   fill("overdue", data.topOverdue, i =>
     `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysOverdue}</td></tr>`);
 
@@ -288,13 +289,25 @@ fetch("overdue.json")
     `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td><td>${u.score}</td></tr>`);
 
   fill("predictions", data.predictions, i =>
-    `<tr><td>${link(i)}</td><td>${i.title}</td><td><span class="badge red">${i.prediction}</span></td></tr>`);
+    `<tr><td>${link(i)}</td><td>${i.title}</td><td><span class="badge badge-danger">High</span></td></tr>`);
 
-  fill("timeline", data.timeline, i => {
-    let cls="green";
-    if(i.status==="delayed") cls="red";
-    else if(i.status==="at-risk") cls="orange";
-    return `<tr><td>#${i.number}</td><td>${i.title}</td><td><span class="badge ${cls}">${i.status}</span></td></tr>`;
+  fill("timeline", data.timeline, t => {
+    let badge = "badge-ok";
+    if (t.status === "delayed") badge = "badge-danger";
+    else if (t.status === "at-risk") badge = "badge-warn";
+
+    return `
+      <tr>
+        <td>#${t.number}</td>
+        <td>${t.title}</td>
+        <td><span class="badge ${badge}">${t.status}</span></td>
+        <td>
+          <div class="progress">
+            <div style="width:${t.progress || 0}%"></div>
+          </div>
+        </td>
+      </tr>
+    `;
   });
 
 });
