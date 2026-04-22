@@ -1,303 +1,209 @@
-# 🚀 Portfolio Dashboard (GitHub Project + AI Monitoring)
+# 🚀 Portfolio Dashboard
 
-A fully automated **Project Health Dashboard** powered by:
+**GitHub Projects + Automation + AI Monitoring**
 
-* GitHub Projects (v2)
-* GitHub Actions (CI/CD)
-* GitHub Pages (static dashboard)
-* AI-like risk prediction (rule-based)
-* Auto issue monitoring & alerts
+A fully automated **Project Health Dashboard** built on top of GitHub:
+
+* 📅 Timeline management via GitHub Projects (v2)
+* ⚙️ CI/CD automation via GitHub Actions
+* 🌐 Static dashboard via GitHub Pages
+* 🤖 AI-like risk prediction (rule-based)
+* 🔄 Continuous sync between planning and execution
 
 ---
 
-# 📊 What This Project Does
+# 🧠 System Overview
 
-This system automatically:
+```text
+GitHub Project (Source of Truth)
+        ↓
+GitHub Actions (Scheduled Sync)
+        ↓
+GraphQL API (project.json)
+        ↓
+generate.js (Processing Engine)
+        ↓
+docs/overdue.json
+        ↓
+Dashboard (GitHub Pages)
+```
 
-✅ Tracks issues from GitHub Projects
-✅ Reads **Due Date / Status / Priority**
+### 🔑 Core Principle
+
+> **GitHub Project = Reality**
+> **Dashboard = Reflection**
+
+---
+
+# 📊 What This System Does
+
+Automatically:
+
+✅ Tracks project issues
+✅ Reads structured fields:
+
+* Due Date
+* Start Date
+* Status
+* Priority
+
 ✅ Detects:
 
-* Overdue issues
-* Urgent issues
-* Inactive tasks
+* Overdue tasks
+* Urgent deadlines
+* Inactive work
 
 ✅ Generates:
 
-* `docs/overdue.json` (dashboard data)
-* Charts + tables (via `index.html`)
-* Team workload analysis
+* 📄 JSON data (`overdue.json`)
+* 📊 Charts & tables (via `index.html`)
+* 👤 Team workload insights
 
-✅ Optional:
+✅ Advanced features:
 
-* Auto comment on overdue issues
-* Slack / LINE alerts
-* AI risk prediction
-
----
-
-# 🏗️ Architecture
-
-```
-GitHub Project (Issues + Fields)
-        ↓
-GitHub Actions (cron job)
-        ↓
-GraphQL API → project.json
-        ↓
-generate.js → overdue.json
-        ↓
-GitHub Pages → Dashboard UI
-```
+* 🤖 Risk prediction (deadline failure)
+* 💬 Auto-comments on overdue issues
+* 🔔 Slack / LINE alerts (optional)
+* 📈 Timeline health tracking
 
 ---
 
-# ⚙️ Setup Guide (Step-by-Step)
+# 📅 Project Timeline Setup (CRITICAL)
+
+You are not just tracking issues—you are building a **timeline-driven execution system**.
 
 ---
 
-## 1️⃣ Create Repository
-
-Example:
-
-```
-portfolio-dashboard
-```
-
----
-
-## 2️⃣ Enable GitHub Pages
-
-Settings → Pages
-
-```
-Source: Deploy from branch
-Branch: main
-Folder: /docs
-```
-
-Access:
-
-```
-https://<your-username>.github.io/portfolio-dashboard/
-```
-
----
-
-## 3️⃣ Create GitHub Project (CRITICAL)
+## ✅ STEP 1 — Create GitHub Project (v2)
 
 Go to:
 
-GitHub → Projects → New Project (Beta)
-
----
-
-## 🔑 Add REQUIRED fields
-
-| Field Name | Type          |
-| ---------- | ------------- |
-| Status     | Single Select |
-| Due Date   | Date          |
-| Start Date | Date          |
-| Priority   | Single Select |
-
----
-
-## ⚠️ IMPORTANT
-
-* MUST be **Project v2**
-* MUST add issues into project manually or via UI
-* Without items → dashboard = empty
-
----
-
-## 4️⃣ Add Issues to Project
-
-### Method A (UI)
-
-* Open issue
-* Right sidebar → Projects → Add
-
-### Method B (Project view)
-
-* Click **+ Add item**
-
----
-
-## 5️⃣ Create GitHub Token
-
-Go to:
-
-Settings → Developer settings → Personal Access Token
-
----
-
-### Required permissions:
-
 ```
-repo
-project
-read:org
+GitHub → Projects → New Project
+```
+
+⚠️ MUST use **Project V2** (not classic)
+
+---
+
+## 🔹 Required Fields
+
+| Field Name | Type          | Purpose           |
+| ---------- | ------------- | ----------------- |
+| Due Date   | Date          | Deadline tracking |
+| Start Date | Date          | Execution start   |
+| Status     | Single Select | Workflow state    |
+| Priority   | Single Select | Risk weighting    |
+
+---
+
+## 🎯 Result: “Gantt-lite” Timeline
+
+```text
+Task A → Start: Apr 20 → Due: Apr 25
+Task B → Start: Apr 22 → Due: Apr 28
 ```
 
 ---
 
-## Save in repo:
+## ⚠️ Important
 
-```
-Settings → Secrets → Actions
+* You MUST manually add issues into the project
+* No items = empty dashboard
 
-GH_TOKEN = your_token
+---
+
+# ⚙️ Automation (GitHub Actions)
+
+---
+
+## ✅ STEP 2 — Workflow Schedule
+
+```yaml
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"  # every hour
 ```
 
 ---
 
-## 6️⃣ GitHub Actions (YAML)
+## 🧠 What Happens
 
-Key responsibilities:
-
-* Fetch project data via GraphQL
-* Generate dashboard JSON
-* Commit updates
-
----
-
-## 🔥 CRITICAL FIXES (from real issues encountered)
-
----
-
-### ❌ Problem 1: `project.json not found`
-
-**Cause**
-
-```
-Using issues.json instead of project.json
-```
-
-**Fix**
-
-```
-Use GraphQL project API
+```text
+Every hour:
+→ Fetch project data (GraphQL)
+→ Process metrics (generate.js)
+→ Update dashboard JSON
+→ Deploy via GitHub Pages
 ```
 
 ---
 
-### ❌ Problem 2: No project found
+## ⚠️ Important Truth
 
-**Cause**
+GitHub Projects **DO NOT push updates**
 
-```
-Wrong query: repository.projectsV2
-```
+👉 Your system uses:
 
-**Fix**
-
-```
-Use viewer.projectsV2
+```text
+Polling (pull-based sync)
 ```
 
 ---
 
-### ❌ Problem 3: JSON parsing error (400)
+# 🧠 Data Processing Logic (`generate.js`)
 
-**Cause**
+---
 
-```
-Broken inline JSON in curl
-```
+## 📅 Timeline Intelligence
 
-**Fix**
+### Progress Calculation
 
-```
-Use HEREDOC (query.json)
+```javascript
+progress = (time passed / total duration) * 100
 ```
 
 ---
 
-### ❌ Problem 4: GraphQL UNION error
+### Schedule Health
 
-Error:
-
-```
-Selections can't be made directly on unions
-```
-
-**Cause**
-
-```
-field { name } is invalid
+```javascript
+if (overdue) → delayed
+if (progress high but time left large) → slow-progress
+else → on-track
 ```
 
 ---
 
-### ✅ Fix (IMPORTANT)
+## 🤖 AI Risk Prediction
 
-Use fragment:
+Simple but effective scoring:
 
-```
-field {
-  ... on ProjectV2FieldCommon {
-    name
-  }
-}
+```text
+Overdue → +3
+Near deadline → +2
+Inactive (>3 days) → +2
 ```
 
 ---
 
-### ❌ Problem 5: Empty dashboard
+### Prediction Rule
 
-**Cause**
-
-```
-No issues inside project
-```
-
-**Fix**
-
-```
-Add issues manually
-```
-
----
-
-# 🧠 AI Prediction Logic (Built-in)
-
-Simple but effective:
-
-```
-risk =
-  overdue → +3
-  due soon → +2
-  inactive → +2
-```
-
----
-
-### Prediction:
-
-```
+```text
 risk >= 4 → ⚠️ Likely to miss deadline
 ```
 
 ---
 
-# 🔄 Automation (GitHub Actions)
+# 📊 Dashboard Features
 
-Runs every hour:
-
-```
-cron: "0 * * * *"
-```
-
----
-
-### Flow:
-
-1. Fetch project data
-2. Process via `generate.js`
-3. Output JSON
-4. Commit to repo
-5. GitHub Pages auto-updates
+* 📈 Status overview chart
+* 🏆 Top overdue issues
+* 🔥 Urgent tasks
+* 👤 Team workload ranking
+* 🤖 Risk prediction panel
+* ⏱ Timeline health view
 
 ---
 
@@ -316,114 +222,208 @@ portfolio-dashboard/
 
 ---
 
-# 📊 Dashboard Features
-
-* Status chart
-* Overdue ranking
-* Urgent issues
-* Team workload
-* AI prediction
-* Timeline health
-
----
-
-# 🚨 Things You MUST Remember (Hard Lessons)
-
----
-
-## 1. Project Type Matters
+# 🌐 GitHub Pages Setup
 
 ```
-Use: viewer.projectsV2
-NOT: repository.projectsV2
+Settings → Pages
+Source: Deploy from branch
+Branch: main
+Folder: /docs
+```
+
+Access your dashboard:
+
+```
+https://<your-username>.github.io/portfolio-dashboard/
 ```
 
 ---
 
-## 2. GraphQL is Strict
+# 🔑 GitHub Token Setup
 
-* Union types require fragments
-* JSON must be valid
-
----
-
-## 3. GitHub Actions ≠ Local Files
+Go to:
 
 ```
-project.json is TEMPORARY
-```
-
-It does NOT exist in repo.
-
----
-
-## 4. Data comes ONLY from Project
-
-```
-No project items = empty dashboard
+Settings → Developer Settings → Personal Access Token
 ```
 
 ---
 
-## 5. Token Permissions are Critical
-
-Missing:
+## Required Permissions
 
 ```
+repo
 project
+read:org
 ```
 
-→ Everything breaks silently
+Save in:
+
+```
+Repo → Settings → Secrets → Actions
+
+GH_TOKEN = your_token
+```
+
+---
+
+# 🚨 Real-World Issues & Fixes (IMPORTANT)
+
+---
+
+## ❌ Issue 1 — `project.json not found`
+
+**Cause**
+
+```
+Trying to read issues.json
+```
+
+**Fix**
+
+```
+Use GraphQL project API
+```
+
+---
+
+## ❌ Issue 2 — No project found
+
+**Cause**
+
+```
+Using repository.projectsV2
+```
+
+**Fix**
+
+```
+Use viewer.projectsV2
+```
+
+---
+
+## ❌ Issue 3 — GraphQL 400 error
+
+**Cause**
+
+```
+Broken JSON in curl
+```
+
+**Fix**
+
+```
+Use HEREDOC or proper escaping
+```
+
+---
+
+## ❌ Issue 4 — UNION error
+
+Error:
+
+```
+Selections can't be made directly on unions
+```
+
+---
+
+### ✅ Fix
+
+```graphql
+field {
+  ... on ProjectV2FieldCommon {
+    name
+  }
+}
+```
+
+---
+
+## ❌ Issue 5 — Empty Dashboard
+
+**Cause**
+
+```
+No issues inside project
+```
+
+**Fix**
+
+```
+Add issues manually
+```
+
+---
+
+## ❌ Issue 6 — project.json missing in repo
+
+**Important**
+
+```
+project.json is NOT stored in repo
+```
+
+👉 It is generated **inside GitHub Actions runtime only**
+
+---
+
+# 🧩 Troubleshooting Checklist
+
+If dashboard shows no data:
+
+* ✅ Project has items
+* ✅ Issues have Due Date
+* ✅ Token has `project` permission
+* ✅ GraphQL query is valid
+* ✅ Action logs show successful fetch
+* ✅ `generate.js` runs without error
+
+---
+
+# 🔄 System Behavior (End-to-End)
+
+---
+
+## 👨‍💻 You Update
+
+Inside GitHub Project:
+
+* Due Date
+* Start Date
+* Status
+* Priority
+
+---
+
+## 🤖 System Runs
+
+```text
+Cron → Fetch → Process → Update JSON
+```
+
+---
+
+## 📊 Dashboard Updates
+
+Always reflects:
+
+```text
+Real-time project state
+```
 
 ---
 
 # 🚀 Future Enhancements
 
 * 🔥 Multi-repo aggregation
-* 🔥 Slack / LINE notifications
-* 🔥 Gantt timeline chart
-* 🔥 Real ML prediction model
-* 🔥 Auto assign tasks
-* 🔥 Productivity scoring
-
----
-
-# 🧩 Troubleshooting Checklist
-
-If dashboard is empty:
-
-✅ Project has items
-✅ Issues have Due Date
-✅ Token has project permission
-✅ GraphQL query valid
-✅ generate.js runs successfully
-
----
-
-# 🎯 Final Notes
-
-This project is not just a dashboard.
-
-It is a **mini project management system powered by GitHub**:
-
-* Replace Jira / Linear (lightweight)
-* Fully automated
-* Developer-friendly
-* Extensible with AI
-
----
-
-# 💡 Philosophy
-
-> “If it's not tracked, it will be late.
-> If it's not automated, it will be ignored.”
-
----
-
-# 👨‍💻 Author
-
-Built as a **leadership + engineering system**
-to manage teams, deadlines, and delivery health.
+* 🔥 Slack / LINE alerts
+* 🔥 Gantt chart UI
+* 🔥 Burn-down charts
+* 🔥 ML-based prediction
+* 🔥 Auto task assignment
+* 🔥 Team productivity scoring
 
 ---
 
