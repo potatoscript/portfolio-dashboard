@@ -1,10 +1,9 @@
 name: Update Dashboard
 
 on:
-  workflow_dispatch: #manual refresh button
+  workflow_dispatch:
   schedule:
     - cron: "0 * * * *"
-    #- cron: "*/30 * * * *"
 
 permissions:
   contents: write
@@ -29,7 +28,7 @@ jobs:
           node-version: 18
 
       # =====================
-      # Fetch Project Data (GraphQL)
+      # Fetch Project Data (FIXED)
       # =====================
       - name: Fetch project data
         env:
@@ -42,17 +41,19 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "query": "query {
-                viewer {
+                repository(owner: \"potatoscript\", name: \"portfolio-dashboard\") {
                   projectsV2(first: 10) {
                     nodes {
                       title
-                      items(first: 50) {
+                      items(first: 100) {
                         nodes {
                           content {
                             ... on Issue {
                               number
                               title
                               url
+                              updatedAt
+                              createdAt
                               assignees(first: 1) {
                                 nodes { login }
                               }
@@ -75,7 +76,7 @@ jobs:
             }' > project.json
 
           echo "📄 Project JSON preview:"
-          head -n 20 project.json
+          head -n 50 project.json
 
       # =====================
       # Generate Dashboard JSON
@@ -84,6 +85,7 @@ jobs:
         run: node generate.js
         env:
           REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       # =====================
       # Debug Output
@@ -105,4 +107,4 @@ jobs:
 
           git commit -m "update dashboard" || echo "no change"
 
-          git push origin HEAD:main
+          git push
