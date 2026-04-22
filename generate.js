@@ -9,7 +9,7 @@ const REPO = process.env.REPO;
 const TOKEN = process.env.GH_TOKEN;
 
 // =======================
-// 💬 COMMENT (ANTI-SPAM SAFE)
+// 💬 COMMENT
 // =======================
 
 async function comment(issue, message) {
@@ -21,81 +21,52 @@ async function comment(issue, message) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${TOKEN}`,
-          "Content-Type": "application/json"
+          Authorization: `Bearer ${TOKEN}`,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ body: message })
+        body: JSON.stringify({ body: message }),
       }
     );
 
     if (!res.ok) {
       console.error("❌ Comment failed:", issue.number);
     }
-
   } catch (err) {
     console.error("❌ Comment error:", err);
   }
 }
 
 // =======================
-// 🧠 AI RISK SCORING
+// 🧠 AI RISK
 // =======================
 
 function calculateRisk(diff, inactiveDays) {
   return (
-    (diff < 0 ? 3 : 0) +                       // overdue
-    (diff >= 0 && diff <= 2 ? 2 : 0) +         // near deadline
-    (inactiveDays > 3 ? 2 : 0)                 // inactive
+    (diff < 0 ? 3 : 0) +
+    (diff >= 0 && diff <= 2 ? 2 : 0) +
+    (inactiveDays > 3 ? 2 : 0)
   );
 }
 
 // =======================
-// 📊 CLASSIFICATION
-// =======================
-
-function classify(diff, item, issue, userStats, user) {
-  if (diff < 0) {
-    item.daysOverdue = Math.abs(diff);
-    userStats.overdue++;
-
-    // 🔥 Anti-spam: only once (day 1 overdue)
-    if (item.daysOverdue === 1) {
-      return { type: "overdue", notify: true };
-    }
-
-    return { type: "overdue", notify: false };
-
-  } else if (diff <= 3) {
-    item.daysLeft = diff;
-    userStats.urgent++;
-    return { type: "urgent", notify: false };
-  }
-
-  return { type: "normal", notify: false };
-}
-
-// =======================
-// 📅 PARSE DUE DATE
-// =======================
-
-function parseDueDate(issue) {
-  const body = issue.body || "";
-  const match = body.match(/Due Date:\s*(\d{4}-\d{2}-\d{2})/);
-
-  if (!match) return null;
-
-  return new Date(match[1]);
-}
-
-// =======================
-// 🚀 MAIN
+// 📊 MAIN
 // =======================
 
 async function main() {
   try {
-    const issues = JSON.parse(fs.readFileSync("issues.json"));
+    const raw = JSON.parse(fs.readFileSync("project.json"));
 
-    console.log("📦 Issues:", issues.length);
+    // 🔥 SAFE ACCESS
+    const project =
+      raw?.data?.viewer?.projectsV2?.nodes?.[0];
+
+    if (!project) {
+      throw new Error("No project found in project.json");
+    }
+
+    const items = project.items.nodes;
+
+    console.log("📦 Project items:", items.length);
 
     const now = new Date();
 
@@ -104,31 +75,45 @@ async function main() {
     const predictions = [];
     const users = {};
 
-    for (const issue of issues) {
+    for (const node of items) {
+      const issue = node.content;
+      if (!issue) continue;
 
       if (issue.pull_request) continue;
 
-      // =======================
-      // 📅 DUE DATE
-      // =======================
-      const due = parseDueDate(issue);
-      if (!due) continue;
+      const fields = node.fieldValues.nodes;
 
+      // =======================
+      // 📅 GET DUE DATE (FROM PROJECT FIELD)
+      // =======================
+
+      const dueField = fields.find(
+        (f) => f.field?.name === "Due Date"
+      );
+
+      if (!dueField || !dueField.date) continue;
+
+      const due = new Date(dueField.date);
       const diff = Math.floor((due - now) / 86400000);
 
       const item = {
         number: issue.number,
         title: issue.title,
         repo: REPO,
-        url: issue.html_url
+        url: issue.url,
       };
 
       // =======================
       // 🤖 AI LOGIC
       // =======================
 
-      const updated = new Date(issue.updated_at || issue.created_at);
-      const inactiveDays = Math.floor((now - updated) / 86400000);
+      const updated = new Date(
+        issue.updatedAt || issue.createdAt
+      );
+
+      const inactiveDays = Math.floor(
+        (now - updated) / 86400000
+      );
 
       const risk = calculateRisk(diff, inactiveDays);
 
@@ -140,33 +125,42 @@ async function main() {
       }
 
       // =======================
-      // 👤 USER TRACKING
+      // 👤 USER
       // =======================
 
-      const user = issue.assignee?.login || "unassigned";
+      const user =
+        issue.assignees?.nodes?.[0]?.login || "unassigned";
 
       if (!users[user]) {
-        users[user] = { overdue: 0, urgent: 0, total: 0 };
+        users[user] = {
+          overdue: 0,
+          urgent: 0,
+          total: 0,
+        };
       }
 
       users[user].total++;
 
       // =======================
-      // 📊 CLASSIFICATION
+      // 📊 CLASSIFY
       // =======================
 
-      const result = classify(diff, item, issue, users[user], user);
-
-      if (result.type === "overdue") {
+      if (diff < 0) {
+        item.daysOverdue = Math.abs(diff);
         overdue.push(item);
+        users[user].overdue++;
 
-        if (result.notify) {
-          await comment(issue,
-            `⚠️ This issue is overdue. Please take action.`);
+        // 🔥 anti-spam (only 1st day)
+        if (item.daysOverdue === 1) {
+          await comment(
+            issue,
+            `⚠️ This issue is overdue. Please take action.`
+          );
         }
-
-      } else if (result.type === "urgent") {
+      } else if (diff <= 3) {
+        item.daysLeft = diff;
         urgent.push(item);
+        users[user].urgent++;
       }
     }
 
@@ -180,15 +174,15 @@ async function main() {
         overdue: u.overdue,
         urgent: u.urgent,
         total: u.total,
-        score: u.overdue * 2 + u.urgent
+        score: u.overdue * 2 + u.urgent,
       }))
       .sort((a, b) => b.score - a.score);
 
     // =======================
-    // 📊 TIMELINE HEALTH (NEW)
+    // 📊 TIMELINE
     // =======================
 
-    const timeline = [...overdue, ...urgent].map(i => {
+    const timeline = [...overdue, ...urgent].map((i) => {
       let status = "on-track";
 
       if (i.daysOverdue) status = "delayed";
@@ -197,7 +191,7 @@ async function main() {
       return {
         number: i.number,
         title: i.title,
-        status
+        status,
       };
     });
 
@@ -223,11 +217,11 @@ async function main() {
 
       predictions: predictions.slice(0, 5),
 
-      timeline: timeline.slice(0, 10)
+      timeline: timeline.slice(0, 10),
     };
 
     // =======================
-    // 🛡️ SAFE WRITE
+    // 🛡️ WRITE FILE
     // =======================
 
     if (!fs.existsSync("docs")) {
@@ -240,29 +234,28 @@ async function main() {
     );
 
     console.log("✅ Dashboard updated");
-
   } catch (err) {
     console.error("❌ ERROR:", err);
 
     fs.writeFileSync(
       "docs/overdue.json",
-      JSON.stringify({
-        generatedAt: new Date().toISOString(),
-        overdueCount: 0,
-        urgentCount: 0,
-        topOverdue: [],
-        urgentItems: [],
-        overloadedUsers: [],
-        predictions: [],
-        timeline: [],
-        error: "Failed to generate data"
-      }, null, 2)
+      JSON.stringify(
+        {
+          generatedAt: new Date().toISOString(),
+          overdueCount: 0,
+          urgentCount: 0,
+          topOverdue: [],
+          urgentItems: [],
+          overloadedUsers: [],
+          predictions: [],
+          timeline: [],
+          error: "Failed to generate data",
+        },
+        null,
+        2
+      )
     );
   }
 }
-
-// =======================
-// ▶️ RUN
-// =======================
 
 main();
