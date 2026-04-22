@@ -35,13 +35,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "📡 Fetching project data..."
-
+      
           curl -s -X POST https://api.github.com/graphql \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{
               "query": "query {
-                repository(owner: \"potatoscript\", name: \"portfolio-dashboard\") {
+                viewer {
                   projectsV2(first: 10) {
                     nodes {
                       title
@@ -74,9 +74,9 @@ jobs:
                 }
               }"
             }' > project.json
-
-          echo "📄 Project JSON preview:"
-          head -n 50 project.json
+      
+          echo "📄 DEBUG:"
+          cat project.json
 
       # =====================
       # Generate Dashboard JSON
