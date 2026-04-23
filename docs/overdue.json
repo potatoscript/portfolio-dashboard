@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-22T23:55:11.049Z",
+  "generatedAt": "2026-04-23T02:53:50.387Z",
   "overdueCount": 3,
   "urgentCount": 0,
   "topOverdue": [
@@ -9,7 +9,7 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
       "risk": 3,
-      "daysOverdue": 22
+      "daysOverdue": 23
     },
     {
       "number": 4,
@@ -17,7 +17,7 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
       "risk": 3,
-      "daysOverdue": 8
+      "daysOverdue": 9
     },
     {
       "number": 2,
@@ -25,7 +25,7 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
       "risk": 3,
-      "daysOverdue": 3
+      "daysOverdue": 4
     }
   ],
   "urgentItems": [],
