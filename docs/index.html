@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Portfolio Project Dashboard</title>
+<title>Portfolio Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -21,109 +21,114 @@
   --primary:#6366f1;
 }
 
+body.dark {
+  --bg:#0f172a;
+  --card:#111827;
+  --text:#e5e7eb;
+  --border:#1f2933;
+}
+
 body {
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
   background:var(--bg);
   color:var(--text);
-  padding:2rem;
 }
 
-h1 {
-  margin:0;
-  font-size:28px;
+/* HEADER */
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 30px;
+  border-bottom:1px solid var(--border);
 }
 
-.sub {
-  color:var(--muted);
-  margin-bottom:20px;
+.controls {
+  display:flex;
+  gap:10px;
 }
 
-/* ===================== */
-/* KPI CARDS */
-/* ===================== */
+select, button {
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+}
+
+/* KPI */
 .kpis {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
   gap:1rem;
-  margin-bottom:1.5rem;
+  padding:20px;
 }
 
 .kpi {
   background:var(--card);
   border:1px solid var(--border);
-  border-radius:14px;
-  padding:1rem;
-}
-
-.kpi h3 {
-  margin:0;
-  font-size:14px;
-  color:var(--muted);
+  border-radius:12px;
+  padding:15px;
 }
 
 .kpi .value {
-  font-size:26px;
+  font-size:24px;
   font-weight:bold;
-  margin-top:5px;
 }
 
-/* ===================== */
 /* GRID */
-/* ===================== */
 .dashboard {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
   gap:1rem;
+  padding:20px;
 }
 
 .card {
   background:var(--card);
-  border-radius:14px;
-  padding:1rem;
   border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  transition:.3s;
 }
 
-.card h2 {
-  margin-top:0;
-  font-size:18px;
+.card:hover {
+  transform:translateY(-4px);
 }
 
-/* ===================== */
 /* TABLE */
-/* ===================== */
 table {
   width:100%;
   border-collapse:collapse;
-  font-size:.9rem;
 }
 
 th, td {
-  padding:.6rem;
+  padding:8px;
   border-bottom:1px solid var(--border);
 }
 
 th {
-  text-align:left;
   color:var(--muted);
+  text-align:left;
 }
 
+/* BADGES */
 .badge {
   padding:3px 8px;
-  border-radius:8px;
+  border-radius:6px;
   font-size:12px;
-  font-weight:600;
 }
 
 .badge-danger { background:#fee2e2; color:#b91c1c; }
-.badge-warn   { background:#fef3c7; color:#92400e; }
-.badge-ok     { background:#dcfce7; color:#166534; }
+.badge-warn { background:#fef3c7; color:#92400e; }
+.badge-ok { background:#dcfce7; color:#166534; }
 
+/* PROGRESS */
 .progress {
   height:6px;
   background:#e5e7eb;
   border-radius:4px;
-  overflow:hidden;
 }
 
 .progress div {
@@ -131,336 +136,218 @@ th {
   background:var(--primary);
 }
 
-.empty {
-  color:var(--muted);
-  font-style:italic;
-}
+/* GANTT */
+.gantt-row { margin-bottom:10px; }
+.gantt-bar { height:16px; background:#e5e7eb; border-radius:6px; }
+.gantt-fill { height:100%; border-radius:6px; }
 
-a {
-  color:var(--primary);
-  text-decoration:none;
-}
+.delayed { background:var(--danger); }
+.risk { background:var(--warn); }
+.ok { background:var(--ok); }
 
-
-.gantt-row {
-  margin-bottom: 12px;
-}
-
-.gantt-label {
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.gantt-bar {
-  height: 18px;
-  border-radius: 6px;
-  position: relative;
-  background: #e5e7eb;
-}
-
-.gantt-fill {
-  height: 100%;
-  border-radius: 6px;
-  position: absolute;
-}
-
-.gantt-delayed { background: #ef4444; }
-.gantt-risk    { background: #f59e0b; }
-.gantt-ok      { background: #10b981; }
-
-.card {
-  transition: all .3s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-.fade-in {
-  animation: fadeIn .6s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity:0; transform: translateY(10px); }
-  to { opacity:1; transform: translateY(0); }
-}
-
-
-body.dark {
-  --bg:#0f172a;
-  --card:#111827;
-  --text:#e5e7eb;
-  --border:#1f2933;
-}
-  
 </style>
 </head>
 
 <body>
 
-<h1>📊 Project Dashboard</h1>
-<p id="generatedAt" class="sub">Loading...</p>
-
-<!-- KPI -->
-<div class="kpis">
-  <div class="kpi">
-    <h3>Overdue</h3>
-    <div id="kpiOverdue" class="value">0</div>
-  </div>
-  <div class="kpi">
-    <h3>Urgent</h3>
-    <div id="kpiUrgent" class="value">0</div>
-  </div>
-  <div class="kpi">
-    <h3>At Risk</h3>
-    <div id="kpiRisk" class="value">0</div>
-  </div>
-  <div class="kpi">
-    <h3>Total Tasks</h3>
-    <div id="kpiTotal" class="value">0</div>
-  </div>
-</div>
-
-<div class="dashboard">
-
-  <div class="card">
-    <h2>📅 Timeline (Gantt)</h2>
-    <div id="gantt"></div>
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h2>📊 Portfolio Dashboard</h2>
+    <div id="updated" style="font-size:12px;color:gray;"></div>
   </div>
 
-  <select id="repoSelect"></select>
-  <button onclick="toggleTheme()">🌗 Toggle Theme</button>
-  
-  <div style="margin-bottom:1rem;">
-    <select id="filterUser"></select>
-    <select id="filterStatus">
-      <option value="">All Status</option>
+  <div class="controls">
+    <select id="repoFilter"></select>
+    <select id="userFilter"></select>
+    <select id="statusFilter">
+      <option value="">All</option>
       <option value="delayed">Delayed</option>
       <option value="at-risk">At Risk</option>
       <option value="on-track">On Track</option>
     </select>
+    <button onclick="toggleTheme()">🌗</button>
   </div>
-    
-  <!-- STATUS -->
-  <div class="card">
-    <h2>Status Overview</h2>
-    <canvas id="statusChart"></canvas>
-  </div>
+</div>
 
-  <!-- OVERDUE -->
-  <div class="card">
-    <h2>Overdue Issues</h2>
-    <canvas id="overdueChart"></canvas>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Title</th><th>Days</th></tr>
-      </thead>
-      <tbody id="overdue"></tbody>
-    </table>
-  </div>
+<!-- KPI -->
+<div class="kpis">
+  <div class="kpi"><div>Overdue</div><div id="kpiOverdue" class="value"></div></div>
+  <div class="kpi"><div>Urgent</div><div id="kpiUrgent" class="value"></div></div>
+  <div class="kpi"><div>At Risk</div><div id="kpiRisk" class="value"></div></div>
+  <div class="kpi"><div>Total</div><div id="kpiTotal" class="value"></div></div>
+</div>
 
-  <!-- URGENT -->
-  <div class="card">
-    <h2>Urgent Issues</h2>
-    <canvas id="urgentChart"></canvas>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Title</th><th>Days Left</th></tr>
-      </thead>
-      <tbody id="urgent"></tbody>
-    </table>
-  </div>
+<!-- DASHBOARD -->
+<div class="dashboard">
 
-  <!-- TEAM -->
-  <div class="card">
-    <h2>Team Load</h2>
-    <canvas id="userChart"></canvas>
-    <table>
-      <thead>
-        <tr><th>User</th><th>Overdue</th><th>Urgent</th><th>Score</th></tr>
-      </thead>
-      <tbody id="users"></tbody>
-    </table>
-  </div>
+<div class="card">
+  <h3>Timeline (Gantt)</h3>
+  <div id="gantt"></div>
+</div>
 
-  <!-- PREDICTIONS -->
-  <div class="card">
-    <h2>⚠️ AI Predictions</h2>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Title</th><th>Risk</th></tr>
-      </thead>
-      <tbody id="predictions"></tbody>
-    </table>
-  </div>
+<div class="card">
+  <h3>Status</h3>
+  <canvas id="statusChart"></canvas>
+</div>
 
-  <!-- TIMELINE -->
-  <div class="card">
-    <h2>📅 Timeline Health</h2>
-    <table>
-      <thead>
-        <tr><th>ID</th><th>Title</th><th>Status</th><th>Progress</th></tr>
-      </thead>
-      <tbody id="timeline"></tbody>
-    </table>
-  </div>
+<div class="card">
+  <h3>Overdue</h3>
+  <table><tbody id="overdue"></tbody></table>
+</div>
+
+<div class="card">
+  <h3>Urgent</h3>
+  <table><tbody id="urgent"></tbody></table>
+</div>
+
+<div class="card">
+  <h3>Team Load</h3>
+  <table><tbody id="users"></tbody></table>
+</div>
+
+<div class="card">
+  <h3>AI Prediction</h3>
+  <table><tbody id="predictions"></tbody></table>
+</div>
 
 </div>
 
 <script>
+
+let RAW = {};
+
 fetch("overdue.json")
 .then(r => r.json())
 .then(data => {
-
+  RAW = data;
   initFilters(data);
-  initRepos(data);
-
-  const filtered = applyFilters(data);
-
-  renderGantt(filtered);
-  
-  document.getElementById("generatedAt").textContent =
-    "Updated: " + new Date(data.generatedAt).toLocaleString();
-
-  // KPI
-  document.getElementById("kpiOverdue").textContent = data.overdueCount || 0;
-  document.getElementById("kpiUrgent").textContent = data.urgentCount || 0;
-  document.getElementById("kpiRisk").textContent = data.predictions?.length || 0;
-  document.getElementById("kpiTotal").textContent =
-    (data.overdueCount || 0) + (data.urgentCount || 0);
-
-  // STATUS CHART
-  new Chart(document.getElementById("statusChart"), {
-    type: "doughnut",
-    data: {
-      labels: ["Overdue","Urgent"],
-      datasets: [{
-        data: [data.overdueCount || 0, data.urgentCount || 0]
-      }]
-    }
-  });
-
-  // HELPERS
-  const fill = (id, arr, fn) => {
-    const el = document.getElementById(id);
-    el.innerHTML = "";
-
-    if (!arr || !arr.length) {
-      el.innerHTML = `<tr><td colspan="4" class="empty">No data</td></tr>`;
-      return;
-    }
-
-    arr.forEach(i => el.insertAdjacentHTML("beforeend", fn(i)));
-  };
-
-  const link = i =>
-    `<a href="https://github.com/${i.repo}/issues/${i.number}" target="_blank">#${i.number}</a>`;
-
-  // TABLES
-  fill("overdue", data.topOverdue, i =>
-    `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysOverdue}</td></tr>`);
-
-  fill("urgent", data.urgentItems, i =>
-    `<tr><td>${link(i)}</td><td>${i.title}</td><td>${i.daysLeft}</td></tr>`);
-
-  fill("users", data.overloadedUsers, u =>
-    `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td><td>${u.score}</td></tr>`);
-
-  fill("predictions", data.predictions, i =>
-    `<tr><td>${link(i)}</td><td>${i.title}</td><td><span class="badge badge-danger">High</span></td></tr>`);
-
-  fill("timeline", data.timeline, t => {
-    let badge = "badge-ok";
-    if (t.status === "delayed") badge = "badge-danger";
-    else if (t.status === "at-risk") badge = "badge-warn";
-
-    return `
-      <tr>
-        <td>#${t.number}</td>
-        <td>${t.title}</td>
-        <td><span class="badge ${badge}">${t.status}</span></td>
-        <td>
-          <div class="progress">
-            <div style="width:${t.progress || 0}%"></div>
-          </div>
-        </td>
-      </tr>
-    `;
-  });
-
+  render();
 });
 
+// =======================
+// 🎯 RENDER
+// =======================
+function render() {
+  const data = applyFilters(RAW);
 
+  document.getElementById("updated").innerText =
+    "Updated: " + new Date(RAW.generatedAt).toLocaleString();
+
+  // KPI
+  kpi("kpiOverdue", data.overdueCount);
+  kpi("kpiUrgent", data.urgentCount);
+  kpi("kpiRisk", data.predictions?.length);
+  kpi("kpiTotal", (data.overdueCount||0)+(data.urgentCount||0));
+
+  renderChart(data);
+  renderTable("overdue", data.topOverdue, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysOverdue}</td></tr>`);
+
+  renderTable("urgent", data.urgentItems, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysLeft}</td></tr>`);
+
+  renderTable("users", data.overloadedUsers, u =>
+    `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td></tr>`);
+
+  renderTable("predictions", data.predictions, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td><span class="badge badge-danger">High</span></td></tr>`);
+
+  renderGantt(data);
+}
+
+// =======================
+// 📊 CHART
+// =======================
+function renderChart(data) {
+  new Chart(document.getElementById("statusChart"), {
+    type:"doughnut",
+    data:{
+      labels:["Overdue","Urgent"],
+      datasets:[{ data:[data.overdueCount||0,data.urgentCount||0] }]
+    }
+  });
+}
+
+// =======================
+// 📅 GANTT
+// =======================
 function renderGantt(data) {
   const el = document.getElementById("gantt");
   el.innerHTML = "";
 
-  if (!data.timeline?.length) {
-    el.innerHTML = "<p class='empty'>No timeline data</p>";
-    return;
-  }
+  (data.timeline||[]).forEach(t=>{
+    let cls="ok";
+    if(t.status==="delayed") cls="delayed";
+    if(t.status==="at-risk") cls="risk";
 
-  data.timeline.forEach(task => {
-    const width = task.progress || 10;
-
-    let cls = "gantt-ok";
-    if (task.status === "delayed") cls = "gantt-delayed";
-    else if (task.status === "at-risk") cls = "gantt-risk";
-
-    el.insertAdjacentHTML("beforeend", `
+    el.innerHTML += `
       <div class="gantt-row">
-        <div class="gantt-label">#${task.number} - ${task.title}</div>
+        <div>#${t.number} ${t.title}</div>
         <div class="gantt-bar">
-          <div class="gantt-fill ${cls}" style="width:${width}%"></div>
+          <div class="gantt-fill ${cls}" style="width:${t.progress||10}%"></div>
         </div>
-      </div>
-    `);
+      </div>`;
   });
 }
 
-document.querySelectorAll(".card").forEach((c, i) => {
-  c.classList.add("fade-in");
-  c.style.animationDelay = (i * 0.1) + "s";
-});  
+// =======================
+// 🧰 HELPERS
+// =======================
+function renderTable(id, arr, fn) {
+  const el = document.getElementById(id);
+  el.innerHTML = arr?.length ? arr.map(fn).join("") :
+    `<tr><td colspan="3">No data</td></tr>`;
+}
 
-function initFilters(data) {
-  const users = [...new Set(data.overloadedUsers.map(u => u.user))];
+function kpi(id,val){
+  document.getElementById(id).innerText = val || 0;
+}
 
-  const userSelect = document.getElementById("filterUser");
+// =======================
+// 🔍 FILTERS
+// =======================
+function initFilters(data){
+  const repos=[...new Set([...data.topOverdue,...data.urgentItems].map(i=>i.repo))];
+  const users=[...new Set(data.overloadedUsers.map(u=>u.user))];
 
-  userSelect.innerHTML = `<option value="">All Users</option>` +
-    users.map(u => `<option>${u}</option>`).join("");
-}  
+  fillSelect("repoFilter",repos);
+  fillSelect("userFilter",users);
 
-function applyFilters(data) {
-  const user = document.getElementById("filterUser").value;
+  document.querySelectorAll("select").forEach(s=>{
+    s.addEventListener("change",render);
+  });
+}
 
-  if (!user) return data;
+function fillSelect(id,list){
+  const el=document.getElementById(id);
+  el.innerHTML=`<option value="">All</option>`+
+    list.map(i=>`<option>${i}</option>`).join("");
+}
+
+function applyFilters(data){
+  const repo=document.getElementById("repoFilter").value;
+  const user=document.getElementById("userFilter").value;
+
+  const filter = arr => arr?.filter(i =>
+    (!repo || i.repo===repo) &&
+    (!user || i.user===user)
+  );
 
   return {
     ...data,
-    topOverdue: data.topOverdue.filter(i => i.user === user),
-    urgentItems: data.urgentItems.filter(i => i.user === user)
+    topOverdue: filter(data.topOverdue),
+    urgentItems: filter(data.urgentItems)
   };
-}  
-
-function initRepos(data) {
-  const repos = [...new Set(
-    [...data.topOverdue, ...data.urgentItems].map(i => i.repo)
-  )];
-
-  const el = document.getElementById("repoSelect");
-
-  el.innerHTML =
-    `<option value="">All Repos</option>` +
-    repos.map(r => `<option>${r}</option>`).join("");
 }
 
-function toggleTheme() {
+// =======================
+// 🌗 THEME
+// =======================
+function toggleTheme(){
   document.body.classList.toggle("dark");
 }
-  
+
 </script>
 
 </body>
