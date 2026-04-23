@@ -185,6 +185,14 @@ a {
   from { opacity:0; transform: translateY(10px); }
   to { opacity:1; transform: translateY(0); }
 }
+
+
+body.dark {
+  --bg:#0f172a;
+  --card:#111827;
+  --text:#e5e7eb;
+  --border:#1f2933;
+}
   
 </style>
 </head>
@@ -221,6 +229,9 @@ a {
     <div id="gantt"></div>
   </div>
 
+  <select id="repoSelect"></select>
+  <button onclick="toggleTheme()">🌗 Toggle Theme</button>
+  
   <div style="margin-bottom:1rem;">
     <select id="filterUser"></select>
     <select id="filterStatus">
@@ -302,6 +313,13 @@ fetch("overdue.json")
 .then(r => r.json())
 .then(data => {
 
+  initFilters(data);
+  initRepos(data);
+
+  const filtered = applyFilters(data);
+
+  renderGantt(filtered);
+  
   document.getElementById("generatedAt").textContent =
     "Updated: " + new Date(data.generatedAt).toLocaleString();
 
@@ -426,6 +444,22 @@ function applyFilters(data) {
     urgentItems: data.urgentItems.filter(i => i.user === user)
   };
 }  
+
+function initRepos(data) {
+  const repos = [...new Set(
+    [...data.topOverdue, ...data.urgentItems].map(i => i.repo)
+  )];
+
+  const el = document.getElementById("repoSelect");
+
+  el.innerHTML =
+    `<option value="">All Repos</option>` +
+    repos.map(r => `<option>${r}</option>`).join("");
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+}
   
 </script>
 
