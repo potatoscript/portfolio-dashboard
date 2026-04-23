@@ -140,6 +140,52 @@ a {
   color:var(--primary);
   text-decoration:none;
 }
+
+
+.gantt-row {
+  margin-bottom: 12px;
+}
+
+.gantt-label {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.gantt-bar {
+  height: 18px;
+  border-radius: 6px;
+  position: relative;
+  background: #e5e7eb;
+}
+
+.gantt-fill {
+  height: 100%;
+  border-radius: 6px;
+  position: absolute;
+}
+
+.gantt-delayed { background: #ef4444; }
+.gantt-risk    { background: #f59e0b; }
+.gantt-ok      { background: #10b981; }
+
+.card {
+  transition: all .3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.fade-in {
+  animation: fadeIn .6s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(10px); }
+  to { opacity:1; transform: translateY(0); }
+}
+  
 </style>
 </head>
 
@@ -170,6 +216,21 @@ a {
 
 <div class="dashboard">
 
+  <div class="card">
+    <h2>📅 Timeline (Gantt)</h2>
+    <div id="gantt"></div>
+  </div>
+
+  <div style="margin-bottom:1rem;">
+    <select id="filterUser"></select>
+    <select id="filterStatus">
+      <option value="">All Status</option>
+      <option value="delayed">Delayed</option>
+      <option value="at-risk">At Risk</option>
+      <option value="on-track">On Track</option>
+    </select>
+  </div>
+    
   <!-- STATUS -->
   <div class="card">
     <h2>Status Overview</h2>
@@ -311,6 +372,61 @@ fetch("overdue.json")
   });
 
 });
+
+
+function renderGantt(data) {
+  const el = document.getElementById("gantt");
+  el.innerHTML = "";
+
+  if (!data.timeline?.length) {
+    el.innerHTML = "<p class='empty'>No timeline data</p>";
+    return;
+  }
+
+  data.timeline.forEach(task => {
+    const width = task.progress || 10;
+
+    let cls = "gantt-ok";
+    if (task.status === "delayed") cls = "gantt-delayed";
+    else if (task.status === "at-risk") cls = "gantt-risk";
+
+    el.insertAdjacentHTML("beforeend", `
+      <div class="gantt-row">
+        <div class="gantt-label">#${task.number} - ${task.title}</div>
+        <div class="gantt-bar">
+          <div class="gantt-fill ${cls}" style="width:${width}%"></div>
+        </div>
+      </div>
+    `);
+  });
+}
+
+document.querySelectorAll(".card").forEach((c, i) => {
+  c.classList.add("fade-in");
+  c.style.animationDelay = (i * 0.1) + "s";
+});  
+
+function initFilters(data) {
+  const users = [...new Set(data.overloadedUsers.map(u => u.user))];
+
+  const userSelect = document.getElementById("filterUser");
+
+  userSelect.innerHTML = `<option value="">All Users</option>` +
+    users.map(u => `<option>${u}</option>`).join("");
+}  
+
+function applyFilters(data) {
+  const user = document.getElementById("filterUser").value;
+
+  if (!user) return data;
+
+  return {
+    ...data,
+    topOverdue: data.topOverdue.filter(i => i.user === user),
+    urgentItems: data.urgentItems.filter(i => i.user === user)
+  };
+}  
+  
 </script>
 
 </body>
