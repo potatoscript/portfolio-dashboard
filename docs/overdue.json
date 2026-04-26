@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-25T23:41:37.565Z",
+  "generatedAt": "2026-04-26T03:20:55.864Z",
   "overdueCount": 3,
-  "urgentCount": 0,
+  "urgentCount": 1,
   "topOverdue": [
     {
       "number": 1,
@@ -9,7 +9,7 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
       "risk": 3,
-      "daysOverdue": 25
+      "daysOverdue": 26
     },
     {
       "number": 4,
@@ -17,7 +17,7 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
       "risk": 3,
-      "daysOverdue": 11
+      "daysOverdue": 12
     },
     {
       "number": 2,
@@ -25,17 +25,26 @@
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
       "risk": 3,
-      "daysOverdue": 6
+      "daysOverdue": 7
     }
   ],
-  "urgentItems": [],
+  "urgentItems": [
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
+      "risk": 0,
+      "daysLeft": 3
+    }
+  ],
   "overloadedUsers": [
     {
       "user": "potatoscript",
       "overdue": 3,
-      "urgent": 0,
+      "urgent": 1,
       "total": 4,
-      "score": 6
+      "score": 7
     }
   ],
   "predictions": [],
@@ -54,6 +63,11 @@
       "number": 4,
       "title": "Add AI Risk Prediction panel to dashboard",
       "status": "delayed"
+    },
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "status": "on-track"
     }
   ]
 }
