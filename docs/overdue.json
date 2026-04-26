@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-26T08:16:26.182Z",
+  "generatedAt": "2026-04-26T09:55:53.951Z",
   "overdueCount": 3,
   "urgentCount": 1,
   "topOverdue": [
@@ -8,7 +8,8 @@
       "title": "Test Overdue",
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
-      "risk": 3,
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
       "daysOverdue": 26
     },
     {
@@ -24,7 +25,8 @@
       "title": "Test Urgent",
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
-      "risk": 3,
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
       "daysOverdue": 7
     }
   ],
@@ -34,7 +36,7 @@
       "title": "Normal Task",
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
-      "risk": 0,
+      "risk": 2,
       "daysLeft": 3
     }
   ],
@@ -47,7 +49,26 @@
       "score": 7
     }
   ],
-  "predictions": [],
+  "predictions": [
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 7
+    },
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 26
+    }
+  ],
   "timeline": [
     {
       "number": 2,
