@@ -1,425 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Portfolio Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --danger: #ef4444;
-            --warn: #f59e0b;
-            --ok: #10b981;
-            --primary: #6366f1;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolio Dashboard</title>
 
-        body.dark {
-            --bg: #0f172a;
-            --card: #111827;
-            --text: #e5e7eb;
-            --border: #1f2933;
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
+<style>
+:root {
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --border:#e2e8f0;
 
-        /* HEADER */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            border-bottom: 1px solid var(--border);
-        }
+  --danger:#ef4444;
+  --warn:#f59e0b;
+  --ok:#10b981;
+  --primary:#6366f1;
+}
 
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
+body.dark {
+  --bg:#0f172a;
+  --card:#111827;
+  --text:#e5e7eb;
+  --border:#1f2933;
+}
 
-        select, button {
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--card);
-            color: var(--text);
-            cursor: pointer;
-        }
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:var(--bg);
+  color:var(--text);
+}
 
-        /* KPI */
-        .kpis {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            padding: 20px;
-        }
+/* HEADER */
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 30px;
+  border-bottom:1px solid var(--border);
+}
 
-        .kpi {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
+.controls {
+  display:flex;
+  gap:10px;
+}
 
-        .kpi .value {
-            font-size: 24px;
-            font-weight: bold;
-        }
+select, button {
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+}
 
-        /* GRID */
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1rem;
-            padding: 20px;
-        }
+/* KPI */
+.kpis {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:1rem;
+  padding:20px;
+}
 
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            transition: 0.3s;
-        }
+.kpi {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+}
 
-        .card:hover {
-            transform: translateY(-4px);
-        }
+.kpi .value {
+  font-size:24px;
+  font-weight:bold;
+}
 
-        /* TABLE */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+/* GRID */
+.dashboard {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+  gap:1rem;
+  padding:20px;
+}
 
-        th, td {
-            padding: 8px;
-            border-bottom: 1px solid var(--border);
-        }
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  transition:.3s;
+}
 
-        th {
-            color: var(--muted);
-            text-align: left;
-        }
+.card:hover {
+  transform:translateY(-4px);
+}
 
-        /* BADGES */
-        .badge {
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-        }
+/* TABLE */
+table {
+  width:100%;
+  border-collapse:collapse;
+}
 
-        .badge-danger {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
+th, td {
+  padding:8px;
+  border-bottom:1px solid var(--border);
+}
 
-        .badge-warn {
-            background: #fef3c7;
-            color: #92400e;
-        }
+th {
+  color:var(--muted);
+  text-align:left;
+}
 
-        .badge-ok {
-            background: #dcfce7;
-            color: #166534;
-        }
+/* BADGES */
+.badge {
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
 
-        /* PROGRESS */
-        .progress {
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 4px;
-        }
+.badge-danger { background:#fee2e2; color:#b91c1c; }
+.badge-warn { background:#fef3c7; color:#92400e; }
+.badge-ok { background:#dcfce7; color:#166534; }
 
-        .progress div {
-            height: 100%;
-            background: var(--primary);
-        }
+/* PROGRESS */
+.progress {
+  height:6px;
+  background:#e5e7eb;
+  border-radius:4px;
+}
 
-        /* GANTT */
-        .gantt-row {
-            margin-bottom: 10px;
-        }
+.progress div {
+  height:100%;
+  background:var(--primary);
+}
 
-        .gantt-bar {
-            height: 16px;
-            background: #e5e7eb;
-            border-radius: 6px;
-        }
+/* GANTT */
+.gantt-row { margin-bottom:10px; }
+.gantt-bar { height:16px; background:#e5e7eb; border-radius:6px; }
+.gantt-fill { height:100%; border-radius:6px; }
 
-        .gantt-fill {
-            height: 100%;
-            border-radius: 6px;
-        }
+.delayed { background:var(--danger); }
+.risk { background:var(--warn); }
+.ok { background:var(--ok); }
 
-        .delayed {
-            background: var(--danger);
-        }
-
-        .risk {
-            background: var(--warn);
-        }
-
-        .ok {
-            background: var(--ok);
-        }
-    </style>
+</style>
 </head>
 
 <body>
 
 <!-- HEADER -->
 <div class="header">
-    <div>
-        <h2>📊 Portfolio Dashboard</h2>
-        <div id="updated" style="font-size: 12px; color: gray;"></div>
-    </div>
+  <div>
+    <h2>📊 Portfolio Dashboard</h2>
+    <div id="updated" style="font-size:12px;color:gray;"></div>
+  </div>
 
-    <div class="controls">
-        <select id="repoFilter" aria-label="Filter by Repository"></select>
-        <select id="userFilter" aria-label="Filter by User"></select>
-        <select id="statusFilter" aria-label="Filter by Status">
-            <option value="">All</option>
-            <option value="delayed">Delayed</option>
-            <option value="at-risk">At Risk</option>
-            <option value="on-track">On Track</option>
-        </select>
-        <button onclick="toggleTheme()" aria-label="Toggle Dark Mode">🌗</button>
-    </div>
+  <div class="controls">
+    <select id="repoFilter"></select>
+    <select id="userFilter"></select>
+    <select id="statusFilter">
+      <option value="">All</option>
+      <option value="delayed">Delayed</option>
+      <option value="at-risk">At Risk</option>
+      <option value="on-track">On Track</option>
+    </select>
+    <button onclick="toggleTheme()">🌗</button>
+  </div>
 </div>
 
-<!-- KPI Section -->
-<section class="kpis">
-    <div class="kpi">
-        <div>Overdue</div>
-        <div id="kpiOverdue" class="value"></div>
-    </div>
-    <div class="kpi">
-        <div>Urgent</div>
-        <div id="kpiUrgent" class="value"></div>
-    </div>
-    <div class="kpi">
-        <div>At Risk</div>
-        <div id="kpiRisk" class="value"></div>
-    </div>
-    <div class="kpi">
-        <div>Total</div>
-        <div id="kpiTotal" class="value"></div>
-    </div>
-</section>
+<!-- KPI -->
+<div class="kpis">
+  <div class="kpi"><div>Overdue</div><div id="kpiOverdue" class="value"></div></div>
+  <div class="kpi"><div>Urgent</div><div id="kpiUrgent" class="value"></div></div>
+  <div class="kpi"><div>At Risk</div><div id="kpiRisk" class="value"></div></div>
+  <div class="kpi"><div>Total</div><div id="kpiTotal" class="value"></div></div>
+</div>
 
 <!-- DASHBOARD -->
 <div class="dashboard">
-    <div class="card">
-        <h3>Timeline (Gantt)</h3>
-        <div id="gantt"></div>
-    </div>
 
-    <div class="card">
-        <h3>Status Overview</h3>
-        <canvas id="statusChart"></canvas>
-    </div>
+<div class="card">
+  <h3>Timeline (Gantt)</h3>
+  <div id="gantt"></div>
+</div>
 
-    <div class="card">
-        <h3>Overdue Tasks</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Days Overdue</th>
-                </tr>
-            </thead>
-            <tbody id="overdue"></tbody>
-        </table>
-    </div>
+<div class="card">
+  <h3>Status</h3>
+  <canvas id="statusChart"></canvas>
+</div>
 
-    <div class="card">
-        <h3>Urgent Tasks</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Days Left</th>
-                </tr>
-            </thead>
-            <tbody id="urgent"></tbody>
-        </table>
-    </div>
+<div class="card">
+  <h3>Overdue</h3>
+  <table><tbody id="overdue"></tbody></table>
+</div>
 
-    <div class="card">
-        <h3>Team Load</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Overdue</th>
-                    <th>Urgent</th>
-                </tr>
-            </thead>
-            <tbody id="users"></tbody>
-        </table>
-    </div>
+<div class="card">
+  <h3>Urgent</h3>
+  <table><tbody id="urgent"></tbody></table>
+</div>
 
-    <div class="card">
-        <h3>AI Predictions</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Risk Level</th>
-                </tr>
-            </thead>
-            <tbody id="predictions"></tbody>
-        </table>
-    </div>
+<div class="card">
+  <h3>Team Load</h3>
+  <table><tbody id="users"></tbody></table>
+</div>
+
+<div class="card">
+  <h3>AI Prediction</h3>
+  <table><tbody id="predictions"></tbody></table>
+</div>
+
 </div>
 
 <script>
-    let RAW = {};
 
-    fetch("overdue.json")
-        .then(r => r.json())
-        .then(data => {
-            RAW = data;
-            initFilters(data);
-            render();
-        });
+let RAW = {};
 
-    // =======================
-    // 🎯 RENDER
-    // =======================
-    function render() {
-        const data = applyFilters(RAW);
+fetch("overdue.json")
+.then(r => r.json())
+.then(data => {
+  RAW = data;
+  initFilters(data);
+  render();
+});
 
-        document.getElementById("updated").innerText =
-            "Updated: " + new Date(RAW.generatedAt).toLocaleString();
+// =======================
+// 🎯 RENDER
+// =======================
+function render() {
+  const data = applyFilters(RAW);
 
-        // KPI
-        kpi("kpiOverdue", data.overdueCount);
-        kpi("kpiUrgent", data.urgentCount);
-        kpi("kpiRisk", data.predictions?.length);
-        kpi("kpiTotal", (data.overdueCount || 0) + (data.urgentCount || 0));
+  document.getElementById("updated").innerText =
+    "Updated: " + new Date(RAW.generatedAt).toLocaleString();
 
-        renderChart(data);
-        renderTable("overdue", data.topOverdue, i =>
-            `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysOverdue}</td></tr>`);
+  // KPI
+  kpi("kpiOverdue", data.overdueCount);
+  kpi("kpiUrgent", data.urgentCount);
+  kpi("kpiRisk", data.predictions?.length);
+  kpi("kpiTotal", (data.overdueCount||0)+(data.urgentCount||0));
 
-        renderTable("urgent", data.urgentItems, i =>
-            `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysLeft}</td></tr>`);
+  renderChart(data);
+  renderTable("overdue", data.topOverdue, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysOverdue}</td></tr>`);
 
-        renderTable("users", data.overloadedUsers, u =>
-            `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td></tr>`);
+  renderTable("urgent", data.urgentItems, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td>${i.daysLeft}</td></tr>`);
 
-        renderTable("predictions", data.predictions, i =>
-            `<tr><td>#${i.number}</td><td>${i.title}</td><td><span class="badge badge-danger">High</span></td></tr>`);
+  renderTable("users", data.overloadedUsers, u =>
+    `<tr><td>${u.user}</td><td>${u.overdue}</td><td>${u.urgent}</td></tr>`);
 
-        renderGantt(data);
+  renderTable("predictions", data.predictions, i =>
+    `<tr><td>#${i.number}</td><td>${i.title}</td><td><span class="badge badge-danger">High</span></td></tr>`);
+
+  renderGantt(data);
+}
+
+// =======================
+// 📊 CHART
+// =======================
+function renderChart(data) {
+  new Chart(document.getElementById("statusChart"), {
+    type:"doughnut",
+    data:{
+      labels:["Overdue","Urgent"],
+      datasets:[{ data:[data.overdueCount||0,data.urgentCount||0] }]
     }
+  });
+}
 
-    // =======================
-    // 📊 CHART
-    // =======================
-    function renderChart(data) {
-        new Chart(document.getElementById("statusChart"), {
-            type: "doughnut",
-            {
-                labels: ["Overdue", "Urgent"],
-                datasets: [{ [data.overdueCount || 0, data.urgentCount || 0] }]
-            }
-        });
-    }
+// =======================
+// 📅 GANTT
+// =======================
+function renderGantt(data) {
+  const el = document.getElementById("gantt");
+  el.innerHTML = "";
 
-    // =======================
-    // 📅 GANTT
-    // =======================
-    function renderGantt(data) {
-        const el = document.getElementById("gantt");
-        el.innerHTML = "";
+  (data.timeline||[]).forEach(t=>{
+    let cls="ok";
+    if(t.status==="delayed") cls="delayed";
+    if(t.status==="at-risk") cls="risk";
 
-        (data.timeline || []).forEach(t => {
-            let cls = "ok";
-            if (t.status === "delayed") cls = "delayed";
-            if (t.status === "at-risk") cls = "risk";
+    el.innerHTML += `
+      <div class="gantt-row">
+        <div>#${t.number} ${t.title}</div>
+        <div class="gantt-bar">
+          <div class="gantt-fill ${cls}" style="width:${t.progress||10}%"></div>
+        </div>
+      </div>`;
+  });
+}
 
-            el.innerHTML += `
-                <div class="gantt-row">
-                    <div>#${t.number} ${t.title}</div>
-                    <div class="gantt-bar">
-                        <div class="gantt-fill ${cls}" style="width:${t.progress || 10}%"></div>
-                    </div>
-                </div>`;
-        });
-    }
+// =======================
+// 🧰 HELPERS
+// =======================
+function renderTable(id, arr, fn) {
+  const el = document.getElementById(id);
+  el.innerHTML = arr?.length ? arr.map(fn).join("") :
+    `<tr><td colspan="3">No data</td></tr>`;
+}
 
-    // =======================
-    // 🧰 HELPERS
-    // =======================
-    function renderTable(id, arr, fn) {
-        const el = document.getElementById(id);
-        el.innerHTML = arr?.length ? arr.map(fn).join("") :
-            `<tr><td colspan="3">No data</td></tr>`;
-    }
+function kpi(id,val){
+  document.getElementById(id).innerText = val || 0;
+}
 
-    function kpi(id, val) {
-        document.getElementById(id).innerText = val || 0;
-    }
+// =======================
+// 🔍 FILTERS
+// =======================
+function initFilters(data){
+  const repos=[...new Set([...data.topOverdue,...data.urgentItems].map(i=>i.repo))];
+  const users=[...new Set(data.overloadedUsers.map(u=>u.user))];
 
-    // =======================
-    // 🔍 FILTERS
-    // =======================
-    function initFilters(data) {
-        const repos = [...new Set([...data.topOverdue, ...data.urgentItems].map(i => i.repo))];
-        const users = [...new Set(data.overloadedUsers.map(u => u.user))];
+  fillSelect("repoFilter",repos);
+  fillSelect("userFilter",users);
 
-        fillSelect("repoFilter", repos);
-        fillSelect("userFilter", users);
+  document.querySelectorAll("select").forEach(s=>{
+    s.addEventListener("change",render);
+  });
+}
 
-        document.querySelectorAll("select").forEach(s => {
-            s.addEventListener("change", render);
-        });
-    }
+function fillSelect(id,list){
+  const el=document.getElementById(id);
+  el.innerHTML=`<option value="">All</option>`+
+    list.map(i=>`<option>${i}</option>`).join("");
+}
 
-    function fillSelect(id, list) {
-        const el = document.getElementById(id);
-        el.innerHTML = `<option value="">All</option>` +
-            list.map(i => `<option>${i}</option>`).join("");
-    }
+function applyFilters(data){
+  const repo=document.getElementById("repoFilter").value;
+  const user=document.getElementById("userFilter").value;
 
-    function applyFilters(data) {
-        const repo = document.getElementById("repoFilter").value;
-        const user = document.getElementById("userFilter").value;
+  const filter = arr => arr?.filter(i =>
+    (!repo || i.repo===repo) &&
+    (!user || i.user===user)
+  );
 
-        const filter = arr => arr?.filter(i =>
-            (!repo || i.repo === repo) &&
-            (!user || i.user === user)
-        );
+  return {
+    ...data,
+    topOverdue: filter(data.topOverdue),
+    urgentItems: filter(data.urgentItems)
+  };
+}
 
-        return {
-            ...data,
-            topOverdue: filter(data.topOverdue),
-            urgentItems: filter(data.urgentItems)
-        };
-    }
+// =======================
+// 🌗 THEME
+// =======================
+function toggleTheme(){
+  document.body.classList.toggle("dark");
+}
 
-    // =======================
-    // 🌗 THEME
-    // =======================
-    function toggleTheme() {
-        document.body.classList.toggle("dark");
-    }
 </script>
 
 </body>
