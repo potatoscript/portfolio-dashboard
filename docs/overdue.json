@@ -1,10 +1,114 @@
 {
-  "generatedAt": "2026-04-27T18:05:27.960Z",
-  "overdueCount": 0,
-  "urgentCount": 0,
-  "topOverdue": [],
-  "urgentItems": [],
-  "overloadedUsers": [],
-  "predictions": [],
-  "timeline": []
+  "generatedAt": "2026-04-27T20:10:09.159Z",
+  "overdueCount": 3,
+  "urgentCount": 1,
+  "topOverdue": [
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 27
+    },
+    {
+      "number": 4,
+      "title": "Add AI Risk Prediction panel to dashboard",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 13
+    },
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 8
+    }
+  ],
+  "urgentItems": [
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
+      "risk": 4,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysLeft": 2
+    }
+  ],
+  "overloadedUsers": [
+    {
+      "user": "potatoscript",
+      "overdue": 3,
+      "urgent": 1,
+      "total": 4,
+      "score": 7
+    }
+  ],
+  "predictions": [
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 8
+    },
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 27
+    },
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
+      "risk": 4,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysLeft": 2
+    },
+    {
+      "number": 4,
+      "title": "Add AI Risk Prediction panel to dashboard",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 13
+    }
+  ],
+  "timeline": [
+    {
+      "number": 2,
+      "title": "Test Urgent",
+      "status": "delayed"
+    },
+    {
+      "number": 1,
+      "title": "Test Overdue",
+      "status": "delayed"
+    },
+    {
+      "number": 4,
+      "title": "Add AI Risk Prediction panel to dashboard",
+      "status": "delayed"
+    },
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "status": "at-risk"
+    }
+  ]
 }
