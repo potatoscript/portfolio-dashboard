@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-26T23:42:21.440Z",
+  "generatedAt": "2026-04-27T03:25:32.562Z",
   "overdueCount": 3,
   "urgentCount": 1,
   "topOverdue": [
@@ -10,7 +10,7 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 26
+      "daysOverdue": 27
     },
     {
       "number": 4,
@@ -19,7 +19,7 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 12
+      "daysOverdue": 13
     },
     {
       "number": 2,
@@ -28,7 +28,7 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 7
+      "daysOverdue": 8
     }
   ],
   "urgentItems": [
@@ -37,8 +37,9 @@
       "title": "Normal Task",
       "repo": "potatoscript/portfolio-dashboard",
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
-      "risk": 2,
-      "daysLeft": 3
+      "risk": 4,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysLeft": 2
     }
   ],
   "overloadedUsers": [
@@ -58,7 +59,7 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/2",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 7
+      "daysOverdue": 8
     },
     {
       "number": 1,
@@ -67,7 +68,16 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/1",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 26
+      "daysOverdue": 27
+    },
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
+      "risk": 4,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysLeft": 2
     },
     {
       "number": 4,
@@ -76,7 +86,7 @@
       "url": "https://github.com/potatoscript/portfolio-dashboard/issues/4",
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 12
+      "daysOverdue": 13
     }
   ],
   "timeline": [
@@ -98,7 +108,7 @@
     {
       "number": 3,
       "title": "Normal Task",
-      "status": "on-track"
+      "status": "at-risk"
     }
   ]
 }
