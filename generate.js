@@ -39,14 +39,22 @@ function calculateRisk(diff, inactiveDays) {
 }
 
 // =======================
+// 🛡️ SAFE DATE
+// =======================
+function safeDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// =======================
 // 📊 MAIN
 // =======================
 async function main() {
   try {
     const raw = JSON.parse(fs.readFileSync("project.json"));
 
-    const project =
-      raw?.data?.viewer?.projectsV2?.nodes?.[0];
+    const project = raw?.data?.viewer?.projectsV2?.nodes?.[0];
 
     if (!project) {
       throw new Error("No project found");
@@ -70,31 +78,32 @@ async function main() {
       const fields = node.fieldValues.nodes;
 
       // =======================
-      // 📅 FIELDS
+      // 📅 FIELDS (SAFE)
       // =======================
+      const dueField = fields.find(f => f.field?.name === "Due Date");
+      const startField = fields.find(f => f.field?.name === "Start Date");
 
-      const dueField = fields.find(
-        (f) => f.field?.name === "Due Date"
-      );
+      const due = safeDate(dueField?.date);
+      if (!due) continue; // ❌ MUST have due date
 
-      const startField = fields.find(
-        (f) => f.field?.name === "Start Date"
-      );
+      let start = safeDate(startField?.date);
 
-      if (!dueField?.date) continue;
+      // fallback: assume 3-day task
+      if (!start) {
+        start = new Date(due.getTime() - 3 * 86400000);
+      }
 
-      const due = new Date(dueField.date);
-      const start = startField?.date
-        ? new Date(startField.date)
-        : new Date(due.getTime() - 3 * 86400000); // fallback
+      // ensure valid timeline
+      if (start >= due) {
+        start = new Date(due.getTime() - 1 * 86400000);
+      }
 
       const diff = Math.floor((due - now) / 86400000);
 
       // =======================
       // 👤 USER
       // =======================
-      const user =
-        issue.assignees?.nodes?.[0]?.login || "unassigned";
+      const user = issue.assignees?.nodes?.[0]?.login || "unassigned";
 
       if (!users[user]) {
         users[user] = { overdue: 0, urgent: 0, total: 0 };
@@ -103,30 +112,34 @@ async function main() {
       users[user].total++;
 
       // =======================
-      // 📊 PROGRESS
+      // 📊 PROGRESS (ACTUAL)
       // =======================
+      const totalDays = (due - start) / 86400000;
+      const passedDays = (now - start) / 86400000;
+
       let progress = 0;
-
-      const total = (due - start) / 86400000;
-      const passed = (now - start) / 86400000;
-
-      if (total > 0) {
+      if (totalDays > 0) {
         progress = Math.min(
           100,
-          Math.max(0, Math.round((passed / total) * 100))
+          Math.max(0, Math.round((passedDays / totalDays) * 100))
         );
       }
 
       // =======================
-      // 🧠 RISK
+      // 📊 PLANNED PROGRESS (🔥 NEW)
       // =======================
-      const updated = new Date(
-        issue.updatedAt || issue.createdAt
+      const plannedProgress = Math.min(
+        100,
+        Math.max(0, Math.round((passedDays / totalDays) * 100))
       );
 
-      const inactiveDays = Math.floor(
-        (now - updated) / 86400000
-      );
+      // =======================
+      // 🧠 RISK
+      // =======================
+      const updated = safeDate(issue.updatedAt || issue.createdAt);
+      const inactiveDays = updated
+        ? Math.floor((now - updated) / 86400000)
+        : 0;
 
       const risk = calculateRisk(diff, inactiveDays);
 
@@ -137,9 +150,11 @@ async function main() {
         url: issue.url,
         user,
 
-        start: start.toISOString(),
-        due: due.toISOString(),
+        startDate: start.toISOString(),
+        dueDate: due.toISOString(),
+
         progress,
+        plannedProgress,
         risk,
       };
 
@@ -165,7 +180,6 @@ async function main() {
         if (item.daysOverdue === 1) {
           await comment(issue, "⚠️ This issue is overdue.");
         }
-
       } else if (diff <= 3) {
         item.daysLeft = diff;
         urgent.push(item);
@@ -174,14 +188,15 @@ async function main() {
       }
 
       // =======================
-      // 📅 TIMELINE ENTRY
+      // 📅 TIMELINE ENTRY (FIXED)
       // =======================
       timeline.push({
         number: item.number,
         title: item.title,
-        start: item.start,
-        due: item.due,
+        startDate: item.startDate,
+        dueDate: item.dueDate,
         progress: item.progress,
+        plannedProgress: item.plannedProgress,
         status,
         user,
         repo: item.repo,
