@@ -310,8 +310,14 @@ fetch("overdue.json")
   RAW = data;
   initFilters(data);
   render();
+})
+.catch(err => {
+  console.error("❌ Failed to load data:", err);
 });
 
+// =======================
+// 🎯 RENDER
+// =======================
 function render() {
   const data = applyFilters(RAW);
 
@@ -340,6 +346,9 @@ function render() {
   renderGantt(data);
 }
 
+// =======================
+// 📊 CHART
+// =======================
 function renderChart(data) {
   new Chart(document.getElementById("statusChart"), {
     type:"doughnut",
@@ -352,34 +361,33 @@ function renderChart(data) {
   });
 }
 
+// =======================
+// 📅 GANTT (FIXED)
+// =======================
 function renderGantt(data) {
   const el = document.getElementById("gantt");
   el.innerHTML = "";
 
-  if (!data.timeline || !data.timeline.length) {
+  if (!data.timeline || data.timeline.length === 0) {
     el.innerHTML = "<p class='empty'>No timeline data</p>";
     return;
   }
 
   data.timeline.forEach(task => {
-    // ✅ SAFE DATE PARSE
-    const start = task.startDate ? new Date(task.startDate) : null;
-    const due = task.dueDate ? new Date(task.dueDate) : null;
 
-    if (!due || isNaN(due.getTime())) return;
+    // ✅ CORRECT FIELD NAMES
+    const start = new Date(task.start);
+    const due   = new Date(task.due);
 
-    // fallback if start missing
-    const safeStart = start && !isNaN(start.getTime())
-      ? start
-      : new Date(due.getTime() - 3 * 86400000);
+    if (isNaN(start) || isNaN(due)) {
+      console.warn("⚠️ Invalid date in task:", task);
+      return;
+    }
 
     // =====================
     // FORMAT DATE
     // =====================
-    const fmt = d => {
-      if (!d || isNaN(d.getTime())) return "N/A";
-      return d.toISOString().slice(5, 10);
-    };
+    const fmt = d => d.toISOString().slice(5,10);
 
     // =====================
     // STATUS COLOR
@@ -389,33 +397,55 @@ function renderGantt(data) {
     else if (task.status === "at-risk") cls = "risk";
 
     // =====================
+    // TODAY POSITION
+    // =====================
+    const now = new Date();
+    const total = due - start;
+    const passed = now - start;
+
+    let todayPos = 0;
+    if (total > 0) {
+      todayPos = Math.min(100, Math.max(0, (passed / total) * 100));
+    }
+
+    // =====================
     // BUILD UI
     // =====================
     el.insertAdjacentHTML("beforeend", `
-      <div class="gantt-row">
+      <div class="gantt-row fade">
+
         <div style="display:flex; justify-content:space-between;">
           <div>#${task.number} ${task.title}</div>
-          <div>${fmt(safeStart)} → ${fmt(due)}</div>
+          <div style="font-size:12px;color:gray;">
+            ${fmt(start)} → ${fmt(due)}
+          </div>
         </div>
 
-        <div class="gantt-bar" style="position:relative;">
-          
-          <!-- planned -->
+        <div class="gantt-bar">
+
+          <!-- planned full timeline -->
           <div style="
             position:absolute;
+            width:100%;
             height:100%;
-            width:${task.plannedProgress || 0}%;
             background:#e5e7eb;
-            opacity:0.6;
             border-radius:6px;
           "></div>
 
-          <!-- actual -->
+          <!-- actual progress -->
           <div class="gantt-fill ${cls}" style="
             width:${task.progress || 0}%;
             position:absolute;
             height:100%;
-            border-radius:6px;
+          "></div>
+
+          <!-- TODAY marker -->
+          <div style="
+            position:absolute;
+            left:${todayPos}%;
+            width:2px;
+            height:100%;
+            background:black;
           "></div>
 
         </div>
@@ -424,8 +454,9 @@ function renderGantt(data) {
   });
 }
 
-
-
+// =======================
+// 🧰 HELPERS
+// =======================
 function renderTable(id, arr, fn) {
   const el = document.getElementById(id);
   el.innerHTML = arr?.length ? arr.map(fn).join("") :
@@ -436,6 +467,9 @@ function kpi(id,val){
   document.getElementById(id).innerText = val || 0;
 }
 
+// =======================
+// 🔍 FILTERS (FIXED)
+// =======================
 function initFilters(data){
   const repos=[...new Set([...data.topOverdue,...data.urgentItems].map(i=>i.repo))];
   const users=[...new Set(data.overloadedUsers.map(u=>u.user))];
@@ -454,6 +488,7 @@ function fillSelect(id,list){
     list.map(i=>`<option>${i}</option>`).join("");
 }
 
+// 🔥 IMPORTANT FIX HERE
 function applyFilters(data){
   const repo=document.getElementById("repoFilter").value;
   const user=document.getElementById("userFilter").value;
@@ -466,10 +501,14 @@ function applyFilters(data){
   return {
     ...data,
     topOverdue: filter(data.topOverdue),
-    urgentItems: filter(data.urgentItems)
+    urgentItems: filter(data.urgentItems),
+    timeline: filter(data.timeline)   // ✅ FIX
   };
 }
 
+// =======================
+// 🌗 THEME
+// =======================
 function toggleTheme(){
   document.body.classList.toggle("dark");
 }
