@@ -357,23 +357,79 @@ function renderGantt(data) {
   el.innerHTML = "";
 
   if (!data.timeline?.length) {
-    el.innerHTML = "<div class='empty'>No timeline data available</div>";
+    el.innerHTML = "<p>No timeline data</p>";
     return;
   }
 
-  data.timeline.forEach(t=>{
-    let cls="ok";
-    if(t.status==="delayed") cls="delayed";
-    if(t.status==="at-risk") cls="risk";
+  // Find global date range
+  const allDates = data.timeline.flatMap(t => [
+    new Date(t.start || Date.now()),
+    new Date(t.due || Date.now())
+  ]);
+
+  const minDate = new Date(Math.min(...allDates));
+  const maxDate = new Date(Math.max(...allDates));
+  const totalRange = maxDate - minDate;
+
+  const today = new Date();
+
+  data.timeline.forEach(t => {
+    const start = new Date(t.start || today);
+    const due = new Date(t.due || today);
+
+    const left = ((start - minDate) / totalRange) * 100;
+    const width = ((due - start) / totalRange) * 100;
+
+    const progressWidth = (t.progress || 0);
+
+    let cls = "ok";
+    if (t.status === "delayed") cls = "delayed";
+    if (t.status === "at-risk") cls = "risk";
 
     el.innerHTML += `
       <div class="gantt-row">
-        <div class="gantt-label">#${t.number} ${t.title}</div>
-        <div class="gantt-bar">
-          <div class="gantt-fill ${cls}" style="width:${t.progress||10}%"></div>
+        
+        <div style="display:flex;justify-content:space-between;font-size:12px;">
+          <div>#${t.number} ${t.title}</div>
+          <div>${formatDate(start)} → ${formatDate(due)}</div>
         </div>
-      </div>`;
+
+        <div class="gantt-bar" style="position:relative;">
+          
+          <!-- Planned timeline -->
+          <div style="
+            position:absolute;
+            left:${left}%;
+            width:${width}%;
+            height:100%;
+            background:#cbd5f5;
+            border-radius:6px;
+          "></div>
+
+          <!-- Actual progress -->
+          <div class="gantt-fill ${cls}" style="
+            position:absolute;
+            left:${left}%;
+            width:${width * (progressWidth / 100)}%;
+          "></div>
+
+          <!-- Today marker -->
+          <div style="
+            position:absolute;
+            left:${((today - minDate)/totalRange)*100}%;
+            width:2px;
+            height:100%;
+            background:black;
+          "></div>
+
+        </div>
+      </div>
+    `;
   });
+}
+
+function formatDate(d){
+  return d.toISOString().slice(5,10);
 }
 
 function renderTable(id, arr, fn) {
