@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T22:01:13.124Z",
+  "generatedAt": "2026-04-28T23:57:15.487Z",
   "overdueCount": 3,
   "urgentCount": 1,
   "topOverdue": [
@@ -55,8 +55,8 @@
       "user": "potatoscript",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 64,
-      "plannedProgress": 64,
+      "progress": 67,
+      "plannedProgress": 67,
       "risk": 4,
       "prediction": "⚠️ Likely to miss deadline",
       "daysLeft": 1
@@ -108,8 +108,8 @@
       "user": "potatoscript",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 64,
-      "plannedProgress": 64,
+      "progress": 67,
+      "plannedProgress": 67,
       "risk": 4,
       "prediction": "⚠️ Likely to miss deadline",
       "daysLeft": 1
@@ -157,8 +157,8 @@
       "title": "Normal Task",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 64,
-      "plannedProgress": 64,
+      "progress": 67,
+      "plannedProgress": 67,
       "status": "at-risk",
       "user": "potatoscript",
       "repo": "potatoscript/portfolio-dashboard"
