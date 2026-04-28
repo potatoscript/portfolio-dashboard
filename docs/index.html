@@ -361,74 +361,105 @@ function renderGantt(data) {
     return;
   }
 
-  // Find global date range
-  const allDates = data.timeline.flatMap(t => [
-    new Date(t.start || Date.now()),
-    new Date(t.due || Date.now())
-  ]);
-
-  const minDate = new Date(Math.min(...allDates));
-  const maxDate = new Date(Math.max(...allDates));
-  const totalRange = maxDate - minDate;
-
   const today = new Date();
 
+  // global range
+  const allDates = data.timeline.flatMap(t => [
+    new Date(t.start),
+    new Date(t.due)
+  ]);
+
+  const min = new Date(Math.min(...allDates));
+  const max = new Date(Math.max(...allDates));
+  const range = max - min;
+
   data.timeline.forEach(t => {
-    const start = new Date(t.start || today);
-    const due = new Date(t.due || today);
+    const start = new Date(t.start);
+    const due = new Date(t.due);
 
-    const left = ((start - minDate) / totalRange) * 100;
-    const width = ((due - start) / totalRange) * 100;
+    const left = ((start - min) / range) * 100;
+    const width = ((due - start) / range) * 100;
 
-    const progressWidth = (t.progress || 0);
+    // expected progress (based on time)
+    const expected = Math.min(100,
+      Math.max(0, ((today - start) / (due - start)) * 100)
+    );
 
-    let cls = "ok";
-    if (t.status === "delayed") cls = "delayed";
-    if (t.status === "at-risk") cls = "risk";
+    const actual = t.progress || 0;
+
+    let color = "#10b981"; // green
+    if (t.status === "delayed") color = "#ef4444";
+    else if (t.status === "at-risk") color = "#f59e0b";
 
     el.innerHTML += `
       <div class="gantt-row">
-        
+
         <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <div>#${t.number} ${t.title}</div>
-          <div>${formatDate(start)} → ${formatDate(due)}</div>
+          <div><b>#${t.number}</b> ${t.title}</div>
+          <div>${fmt(start)} → ${fmt(due)}</div>
         </div>
 
-        <div class="gantt-bar" style="position:relative;">
-          
-          <!-- Planned timeline -->
+        <div class="gantt-bar" style="position:relative;height:18px;">
+
+          <!-- Planned -->
           <div style="
             position:absolute;
             left:${left}%;
             width:${width}%;
             height:100%;
-            background:#cbd5f5;
+            background:#c7d2fe;
             border-radius:6px;
           "></div>
 
-          <!-- Actual progress -->
-          <div class="gantt-fill ${cls}" style="
-            position:absolute;
-            left:${left}%;
-            width:${width * (progressWidth / 100)}%;
-          "></div>
-
-          <!-- Today marker -->
+          <!-- Expected (ghost line) -->
           <div style="
             position:absolute;
-            left:${((today - minDate)/totalRange)*100}%;
+            left:${left + width * (expected/100)}%;
+            width:2px;
+            height:100%;
+            background:#6366f1;
+          " title="Expected progress"></div>
+
+          <!-- Actual -->
+          <div style="
+            position:absolute;
+            left:${left}%;
+            width:${width * (actual/100)}%;
+            height:100%;
+            background:${color};
+            border-radius:6px;
+          "></div>
+
+          <!-- Today -->
+          <div style="
+            position:absolute;
+            left:${((today - min)/range)*100}%;
             width:2px;
             height:100%;
             background:black;
           "></div>
 
+          <!-- Due marker -->
+          <div style="
+            position:absolute;
+            left:${left + width}%;
+            width:2px;
+            height:100%;
+            background:#9333ea;
+          " title="Due date"></div>
+
         </div>
+
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">
+          Progress: ${actual}% | Expected: ${Math.round(expected)}%
+        </div>
+
       </div>
     `;
   });
 }
 
-function formatDate(d){
+function fmt(d){
   return d.toISOString().slice(5,10);
 }
 
