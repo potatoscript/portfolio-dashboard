@@ -356,120 +356,75 @@ function renderGantt(data) {
   const el = document.getElementById("gantt");
   el.innerHTML = "";
 
-  if (!data.timeline?.length) {
-    el.innerHTML = "<p>No timeline data</p>";
+  if (!data.timeline || !data.timeline.length) {
+    el.innerHTML = "<p class='empty'>No timeline data</p>";
     return;
   }
 
-  const today = new Date();
-
-  // global range
-  const allDates = data.timeline.flatMap(t => [
-    new Date(t.start),
-    new Date(t.due)
-  ]);
-
-  const min = new Date(Math.min(...allDates));
-  const max = new Date(Math.max(...allDates));
-  const range = max - min;
-
-  data.timeline.forEach(t => {
+  data.timeline.forEach(task => {
+    // ✅ SAFE DATE PARSE
     const start = task.startDate ? new Date(task.startDate) : null;
     const due = task.dueDate ? new Date(task.dueDate) : null;
-    
-    if (!due) return; // ❌ skip invalid
 
-    const left = ((start - min) / range) * 100;
-    const width = ((due - start) / range) * 100;
+    if (!due || isNaN(due.getTime())) return;
 
-    // expected progress (based on time)
-    const expected = Math.min(100,
-      Math.max(0, ((today - start) / (due - start)) * 100)
-    );
+    // fallback if start missing
+    const safeStart = start && !isNaN(start.getTime())
+      ? start
+      : new Date(due.getTime() - 3 * 86400000);
 
-    const actual = t.progress || 0;
+    // =====================
+    // FORMAT DATE
+    // =====================
+    const fmt = d => {
+      if (!d || isNaN(d.getTime())) return "N/A";
+      return d.toISOString().slice(5, 10);
+    };
 
-    let color = "#10b981"; // green
-    if (t.status === "delayed") color = "#ef4444";
-    else if (t.status === "at-risk") color = "#f59e0b";
+    // =====================
+    // STATUS COLOR
+    // =====================
+    let cls = "ok";
+    if (task.status === "delayed") cls = "delayed";
+    else if (task.status === "at-risk") cls = "risk";
 
-    el.innerHTML += `
+    // =====================
+    // BUILD UI
+    // =====================
+    el.insertAdjacentHTML("beforeend", `
       <div class="gantt-row">
-
-        <div style="display:flex;justify-content:space-between;font-size:12px;">
-          <div><b>#${t.number}</b> ${t.title}</div>
-          <div>${fmt(start)} → ${fmt(due)}</div>
+        <div style="display:flex; justify-content:space-between;">
+          <div>#${task.number} ${task.title}</div>
+          <div>${fmt(safeStart)} → ${fmt(due)}</div>
         </div>
 
-        <div class="gantt-bar" style="position:relative;height:18px;">
-
-          <!-- Planned -->
+        <div class="gantt-bar" style="position:relative;">
+          
+          <!-- planned -->
           <div style="
             position:absolute;
-            left:${left}%;
-            width:${width}%;
             height:100%;
-            background:#c7d2fe;
+            width:${task.plannedProgress || 0}%;
+            background:#e5e7eb;
+            opacity:0.6;
             border-radius:6px;
           "></div>
 
-          <!-- Expected (ghost line) -->
-          <div style="
+          <!-- actual -->
+          <div class="gantt-fill ${cls}" style="
+            width:${task.progress || 0}%;
             position:absolute;
-            left:${left + width * (expected/100)}%;
-            width:2px;
             height:100%;
-            background:#6366f1;
-          " title="Expected progress"></div>
-
-          <!-- Actual -->
-          <div style="
-            position:absolute;
-            left:${left}%;
-            width:${width * (actual/100)}%;
-            height:100%;
-            background:${color};
             border-radius:6px;
           "></div>
 
-          <!-- Today -->
-          <div style="
-            position:absolute;
-            left:${((today - min)/range)*100}%;
-            width:2px;
-            height:100%;
-            background:black;
-          "></div>
-
-          <!-- Due marker -->
-          <div style="
-            position:absolute;
-            left:${left + width}%;
-            width:2px;
-            height:100%;
-            background:#9333ea;
-          " title="Due date"></div>
-
         </div>
-
-        <div style="font-size:11px;color:#64748b;margin-top:4px;">
-          Progress: ${actual}% | Expected: ${Math.round(expected)}%
-        </div>
-
       </div>
-    `;
+    `);
   });
 }
 
-function fmt(date) {
-  if (!date) return "N/A";
 
-  const d = new Date(date);
-
-  if (isNaN(d.getTime())) return "N/A"; // ✅ prevents crash
-
-  return d.toISOString().slice(5, 10);
-}
 
 function renderTable(id, arr, fn) {
   const el = document.getElementById(id);
