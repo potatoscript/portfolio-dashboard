@@ -374,8 +374,10 @@ function renderGantt(data) {
   const range = max - min;
 
   data.timeline.forEach(t => {
-    const start = new Date(t.start);
-    const due = new Date(t.due);
+    const start = task.startDate ? new Date(task.startDate) : null;
+    const due = task.dueDate ? new Date(task.dueDate) : null;
+    
+    if (!due) return; // ❌ skip invalid
 
     const left = ((start - min) / range) * 100;
     const width = ((due - start) / range) * 100;
@@ -459,8 +461,14 @@ function renderGantt(data) {
   });
 }
 
-function fmt(d){
-  return d.toISOString().slice(5,10);
+function fmt(date) {
+  if (!date) return "N/A";
+
+  const d = new Date(date);
+
+  if (isNaN(d.getTime())) return "N/A"; // ✅ prevents crash
+
+  return d.toISOString().slice(5, 10);
 }
 
 function renderTable(id, arr, fn) {
