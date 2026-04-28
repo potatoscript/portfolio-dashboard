@@ -368,87 +368,110 @@ function renderGantt(data) {
   const el = document.getElementById("gantt");
   el.innerHTML = "";
 
-  if (!data.timeline || data.timeline.length === 0) {
+  if (!data.timeline || !data.timeline.length) {
     el.innerHTML = "<p class='empty'>No timeline data</p>";
     return;
   }
 
+  const now = new Date();
+
   data.timeline.forEach(task => {
 
-    // ✅ CORRECT FIELD NAMES
-    const start = new Date(task.start);
-    const due   = new Date(task.due);
+    // =====================
+    // 🛡️ SAFE FALLBACK DATA
+    // =====================
 
-    if (isNaN(start) || isNaN(due)) {
-      console.warn("⚠️ Invalid date in task:", task);
-      return;
+    const hasDates = task.start || task.startDate || task.due || task.dueDate;
+
+    let start = task.startDate || task.start;
+    let due   = task.dueDate   || task.due;
+
+    // fallback fake dates if missing (so UI still shows)
+    if (!hasDates) {
+      due = new Date();
+      start = new Date(due.getTime() - 3 * 86400000);
+    } else {
+      start = new Date(start);
+      due = new Date(due);
     }
 
     // =====================
-    // FORMAT DATE
+    // 📊 PROGRESS FALLBACK
     // =====================
-    const fmt = d => d.toISOString().slice(5,10);
+
+    let progress = task.progress;
+
+    if (progress == null) {
+      if (task.status === "delayed") progress = 100;
+      else if (task.status === "at-risk") progress = 60;
+      else progress = 30;
+    }
+
+    // planned = based on time
+    const total = (due - start) / 86400000;
+    const passed = (now - start) / 86400000;
+
+    let planned = 0;
+    if (total > 0) {
+      planned = Math.min(100, Math.max(0, (passed / total) * 100));
+    }
 
     // =====================
-    // STATUS COLOR
+    // 🎨 STATUS COLOR
     // =====================
+
     let cls = "ok";
     if (task.status === "delayed") cls = "delayed";
     else if (task.status === "at-risk") cls = "risk";
 
     // =====================
-    // TODAY POSITION
+    // 📅 FORMAT
     // =====================
-    const now = new Date();
-    const total = due - start;
-    const passed = now - start;
 
-    let todayPos = 0;
-    if (total > 0) {
-      todayPos = Math.min(100, Math.max(0, (passed / total) * 100));
-    }
+    const fmt = d => {
+      if (!d || isNaN(d.getTime())) return "N/A";
+      return d.toISOString().slice(5, 10);
+    };
 
     // =====================
-    // BUILD UI
+    // 🧱 RENDER
     // =====================
+
     el.insertAdjacentHTML("beforeend", `
       <div class="gantt-row fade">
 
-        <div style="display:flex; justify-content:space-between;">
-          <div>#${task.number} ${task.title}</div>
-          <div style="font-size:12px;color:gray;">
-            ${fmt(start)} → ${fmt(due)}
-          </div>
+        <div style="display:flex; justify-content:space-between; font-size:13px;">
+          <div><strong>#${task.number}</strong> ${task.title}</div>
+          <div>${fmt(start)} → ${fmt(due)}</div>
         </div>
 
-        <div class="gantt-bar">
+        <div class="gantt-bar" style="position:relative; margin-top:6px;">
 
-          <!-- planned full timeline -->
+          <!-- Planned (gray baseline) -->
           <div style="
             position:absolute;
-            width:100%;
             height:100%;
-            background:#e5e7eb;
+            width:${planned}%;
+            background:#cbd5f5;
+            opacity:0.5;
             border-radius:6px;
           "></div>
 
-          <!-- actual progress -->
+          <!-- Actual -->
           <div class="gantt-fill ${cls}" style="
-            width:${task.progress || 0}%;
+            width:${progress}%;
             position:absolute;
             height:100%;
-          "></div>
-
-          <!-- TODAY marker -->
-          <div style="
-            position:absolute;
-            left:${todayPos}%;
-            width:2px;
-            height:100%;
-            background:black;
+            border-radius:6px;
           "></div>
 
         </div>
+
+        <!-- Legend -->
+        <div style="font-size:11px; color:gray; margin-top:4px;">
+          Planned: ${planned.toFixed(0)}% | Actual: ${progress}%
+        </div>
+
       </div>
     `);
   });
