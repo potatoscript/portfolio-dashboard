@@ -1,22 +1,17 @@
 const fs = require("fs");
 const fetch = global.fetch || require("node-fetch");
 
-// =======================
-// 🔧 CONFIG
-// =======================
-
 const REPO = process.env.REPO;
 const TOKEN = process.env.GH_TOKEN;
 
 // =======================
-// 💬 COMMENT
+// 💬 COMMENT (optional)
 // =======================
-
 async function comment(issue, message) {
   if (!TOKEN) return;
 
   try {
-    const res = await fetch(
+    await fetch(
       `https://api.github.com/repos/${REPO}/issues/${issue.number}/comments`,
       {
         method: "POST",
@@ -27,19 +22,14 @@ async function comment(issue, message) {
         body: JSON.stringify({ body: message }),
       }
     );
-
-    if (!res.ok) {
-      console.error("❌ Comment failed:", issue.number);
-    }
   } catch (err) {
     console.error("❌ Comment error:", err);
   }
 }
 
 // =======================
-// 🧠 AI RISK
+// 🧠 RISK
 // =======================
-
 function calculateRisk(diff, inactiveDays) {
   return (
     (diff < 0 ? 3 : 0) +
@@ -51,33 +41,19 @@ function calculateRisk(diff, inactiveDays) {
 // =======================
 // 📊 MAIN
 // =======================
-
 async function main() {
   try {
     const raw = JSON.parse(fs.readFileSync("project.json"));
 
-    // 🔥 SAFE ACCESS
-    const projects = raw?.data?.viewer?.projectsV2?.nodes || [];
-
-    const project = projects[0];
-    
-    if (!project) {
-      throw new Error("No project found in viewer.projectsV2");
-    }
-    
-    if (!project) {
-      console.log("Available projects:");
-      projects.forEach(p => console.log("-", p.title));
-      throw new Error("No matching project found");
-    }
+    const project =
+      raw?.data?.viewer?.projectsV2?.nodes?.[0];
 
     if (!project) {
-      throw new Error("No project found in project.json");
+      throw new Error("No project found");
     }
 
     const items = project.items.nodes;
-
-    console.log("📦 Project items:", items.length);
+    console.log("📦 Items:", items.length);
 
     const now = new Date();
 
@@ -85,39 +61,65 @@ async function main() {
     const urgent = [];
     const predictions = [];
     const users = {};
+    const timeline = [];
 
     for (const node of items) {
       const issue = node.content;
-      if (!issue) continue;
-
-      if (issue.pull_request) continue;
+      if (!issue || issue.pull_request) continue;
 
       const fields = node.fieldValues.nodes;
 
       // =======================
-      // 📅 GET DUE DATE (FROM PROJECT FIELD)
+      // 📅 FIELDS
       // =======================
 
       const dueField = fields.find(
         (f) => f.field?.name === "Due Date"
       );
 
-      if (!dueField || !dueField.date) continue;
+      const startField = fields.find(
+        (f) => f.field?.name === "Start Date"
+      );
+
+      if (!dueField?.date) continue;
 
       const due = new Date(dueField.date);
+      const start = startField?.date
+        ? new Date(startField.date)
+        : new Date(due.getTime() - 3 * 86400000); // fallback
+
       const diff = Math.floor((due - now) / 86400000);
 
-      const item = {
-        number: issue.number,
-        title: issue.title,
-        repo: REPO,
-        url: issue.url,
-      };
+      // =======================
+      // 👤 USER
+      // =======================
+      const user =
+        issue.assignees?.nodes?.[0]?.login || "unassigned";
+
+      if (!users[user]) {
+        users[user] = { overdue: 0, urgent: 0, total: 0 };
+      }
+
+      users[user].total++;
 
       // =======================
-      // 🤖 AI LOGIC
+      // 📊 PROGRESS
       // =======================
+      let progress = 0;
 
+      const total = (due - start) / 86400000;
+      const passed = (now - start) / 86400000;
+
+      if (total > 0) {
+        progress = Math.min(
+          100,
+          Math.max(0, Math.round((passed / total) * 100))
+        );
+      }
+
+      // =======================
+      // 🧠 RISK
+      // =======================
       const updated = new Date(
         issue.updatedAt || issue.createdAt
       );
@@ -128,57 +130,67 @@ async function main() {
 
       const risk = calculateRisk(diff, inactiveDays);
 
-      item.risk = risk;
+      const item = {
+        number: issue.number,
+        title: issue.title,
+        repo: REPO,
+        url: issue.url,
+        user,
 
+        start: start.toISOString(),
+        due: due.toISOString(),
+        progress,
+        risk,
+      };
+
+      // =======================
+      // 🔮 PREDICTION
+      // =======================
       if (risk >= 4) {
         item.prediction = "⚠️ Likely to miss deadline";
         predictions.push(item);
       }
 
       // =======================
-      // 👤 USER
-      // =======================
-
-      const user =
-        issue.assignees?.nodes?.[0]?.login || "unassigned";
-
-      if (!users[user]) {
-        users[user] = {
-          overdue: 0,
-          urgent: 0,
-          total: 0,
-        };
-      }
-
-      users[user].total++;
-
-      // =======================
       // 📊 CLASSIFY
       // =======================
+      let status = "on-track";
 
       if (diff < 0) {
         item.daysOverdue = Math.abs(diff);
         overdue.push(item);
         users[user].overdue++;
+        status = "delayed";
 
-        // 🔥 anti-spam (only 1st day)
         if (item.daysOverdue === 1) {
-          await comment(
-            issue,
-            `⚠️ This issue is overdue. Please take action.`
-          );
+          await comment(issue, "⚠️ This issue is overdue.");
         }
+
       } else if (diff <= 3) {
         item.daysLeft = diff;
         urgent.push(item);
         users[user].urgent++;
+        status = "at-risk";
       }
+
+      // =======================
+      // 📅 TIMELINE ENTRY
+      // =======================
+      timeline.push({
+        number: item.number,
+        title: item.title,
+        start: item.start,
+        due: item.due,
+        progress: item.progress,
+        status,
+        user,
+        repo: item.repo,
+      });
     }
 
     // =======================
     // 👤 TEAM LOAD
     // =======================
-
     const overloadedUsers = Object.entries(users)
       .map(([user, u]) => ({
         user,
@@ -190,26 +202,8 @@ async function main() {
       .sort((a, b) => b.score - a.score);
 
     // =======================
-    // 📊 TIMELINE
-    // =======================
-
-    const timeline = [...overdue, ...urgent].map((i) => {
-      let status = "on-track";
-
-      if (i.daysOverdue) status = "delayed";
-      else if (i.daysLeft <= 2) status = "at-risk";
-
-      return {
-        number: i.number,
-        title: i.title,
-        status,
-      };
-    });
-
-    // =======================
     // 📤 OUTPUT
     // =======================
-
     const output = {
       generatedAt: new Date().toISOString(),
 
@@ -228,12 +222,8 @@ async function main() {
 
       predictions: predictions.slice(0, 5),
 
-      timeline: timeline.slice(0, 10),
+      timeline: timeline.slice(0, 20),
     };
-
-    // =======================
-    // 🛡️ WRITE FILE
-    // =======================
 
     if (!fs.existsSync("docs")) {
       fs.mkdirSync("docs");
