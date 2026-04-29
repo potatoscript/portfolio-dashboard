@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-28T23:57:15.487Z",
+  "generatedAt": "2026-04-29T03:54:17.590Z",
   "overdueCount": 3,
   "urgentCount": 1,
   "topOverdue": [
@@ -15,7 +15,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 28
+      "daysOverdue": 29
     },
     {
       "number": 4,
@@ -29,7 +29,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 14
+      "daysOverdue": 15
     },
     {
       "number": 2,
@@ -43,7 +43,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 9
+      "daysOverdue": 10
     }
   ],
   "urgentItems": [
@@ -55,11 +55,11 @@
       "user": "potatoscript",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 67,
-      "plannedProgress": 67,
+      "progress": 72,
+      "plannedProgress": 72,
       "risk": 4,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysLeft": 1
+      "daysLeft": 0
     }
   ],
   "overloadedUsers": [
@@ -84,7 +84,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 9
+      "daysOverdue": 10
     },
     {
       "number": 1,
@@ -98,7 +98,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 28
+      "daysOverdue": 29
     },
     {
       "number": 3,
@@ -108,11 +108,11 @@
       "user": "potatoscript",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 67,
-      "plannedProgress": 67,
+      "progress": 72,
+      "plannedProgress": 72,
       "risk": 4,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysLeft": 1
+      "daysLeft": 0
     },
     {
       "number": 4,
@@ -126,7 +126,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 14
+      "daysOverdue": 15
     }
   ],
   "timeline": [
@@ -157,8 +157,8 @@
       "title": "Normal Task",
       "startDate": "2026-04-27T00:00:00.000Z",
       "dueDate": "2026-04-30T00:00:00.000Z",
-      "progress": 67,
-      "plannedProgress": 67,
+      "progress": 72,
+      "plannedProgress": 72,
       "status": "at-risk",
       "user": "potatoscript",
       "repo": "potatoscript/portfolio-dashboard"
