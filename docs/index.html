@@ -380,89 +380,31 @@ function renderGantt(data) {
     return d.toISOString().slice(5, 10);
   };
 
-  data.timeline.forEach(task => {
+  const now = new Date();
 
-    const start = new Date(task.start || Date.now());
-    const due = new Date(task.due || Date.now());
+// =====================
+// 🧠 SMART SORT
+// =====================
+const sorted = [...data.timeline].sort((a, b) => {
 
-    const diff = Math.floor((due - now) / 86400000);
+  const getStatusPriority = (t) => {
+    if (t.status === "delayed") return 0;
+    if (t.status === "at-risk") return 1;
+    return 2;
+  };
 
-    // =====================
-    // 🧠 HUMAN STATUS
-    // =====================
-    let statusText = "";
-    let color = "#10b981"; // green
+  const pa = getStatusPriority(a);
+  const pb = getStatusPriority(b);
 
-    if (diff < 0) {
-      statusText = `Overdue by ${Math.abs(diff)} days`;
-      color = "#ef4444";
-    } else if (diff <= 3) {
-      statusText = `Due in ${diff} days`;
-      color = "#f59e0b";
-    } else {
-      statusText = `On track (${diff} days left)`;
-      color = "#10b981";
-    }
+  // 1️⃣ sort by status
+  if (pa !== pb) return pa - pb;
 
-    // =====================
-    // 📊 PROGRESS
-    // =====================
-    let progress = task.progress ?? (
-      diff < 0 ? 100 :
-      diff <= 3 ? 60 : 30
-    );
+  // 2️⃣ sort inside group
+  const dueA = new Date(a.due || a.dueDate || Date.now());
+  const dueB = new Date(b.due || b.dueDate || Date.now());
 
-    // =====================
-    // 🧱 UI
-    // =====================
-    el.insertAdjacentHTML("beforeend", `
-      <div class="gantt-row" style="
-        padding:10px;
-        border:1px solid var(--border);
-        border-radius:10px;
-        margin-bottom:10px;
-        background:var(--card);
-      ">
-
-        <!-- TITLE -->
-        <div style="font-weight:600;">
-          #${task.number} ${task.title}
-        </div>
-
-        <!-- STATUS -->
-        <div style="font-size:12px; color:${color}; margin:4px 0;">
-          ${statusText}
-        </div>
-
-        <!-- BAR -->
-        <div style="
-          height:8px;
-          background:#e5e7eb;
-          border-radius:4px;
-          overflow:hidden;
-        ">
-          <div style="
-            width:${progress}%;
-            background:${color};
-            height:100%;
-          "></div>
-        </div>
-
-        <!-- FOOTER -->
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          font-size:11px;
-          color:gray;
-          margin-top:4px;
-        ">
-          <div>${fmt(start)} → ${fmt(due)}</div>
-          <div>${progress}%</div>
-        </div>
-
-      </div>
-    `);
-  });
+  return dueA - dueB;
+});
 }
 
 // =======================
