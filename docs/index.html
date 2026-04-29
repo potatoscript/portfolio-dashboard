@@ -362,7 +362,7 @@ function renderChart(data) {
 }
 
 // =======================
-// 📅 GANTT (FIXED)
+// 📅 GANTT
 // =======================
 function renderGantt(data) {
   const el = document.getElementById("gantt");
@@ -375,108 +375,94 @@ function renderGantt(data) {
 
   const now = new Date();
 
-  // =====================
-  // 📅 GLOBAL TIME RANGE
-  // =====================
-  const allDates = data.timeline.flatMap(t => {
-    const s = new Date(t.start || t.startDate || Date.now());
-    const d = new Date(t.due || t.dueDate || Date.now());
-    return [s, d];
-  });
+  const fmt = d => {
+    if (!d || isNaN(d.getTime())) return "N/A";
+    return d.toISOString().slice(5, 10);
+  };
 
-  const min = new Date(Math.min(...allDates));
-  const max = new Date(Math.max(...allDates));
+  data.timeline.forEach(task => {
 
-  const total = (max - min) || 1;
+    const start = new Date(task.start || Date.now());
+    const due = new Date(task.due || Date.now());
 
-  const fmt = d => d.toISOString().slice(5, 10);
+    const diff = Math.floor((due - now) / 86400000);
 
-  // =====================
-  // 📍 TODAY LINE
-  // =====================
-  const todayPos = ((now - min) / total) * 100;
+    // =====================
+    // 🧠 HUMAN STATUS
+    // =====================
+    let statusText = "";
+    let color = "#10b981"; // green
 
-  el.innerHTML += `
-    <div style="position:relative; height:20px; margin-bottom:10px;">
-      <div style="
-        position:absolute;
-        left:${todayPos}%;
-        top:0;
-        bottom:0;
-        width:2px;
-        background:#6366f1;
-      "></div>
-      <div style="font-size:11px; position:absolute; left:${todayPos}%; transform:translateX(-50%);">
-        Today
-      </div>
-    </div>
-  `;
+    if (diff < 0) {
+      statusText = `Overdue by ${Math.abs(diff)} days`;
+      color = "#ef4444";
+    } else if (diff <= 3) {
+      statusText = `Due in ${diff} days`;
+      color = "#f59e0b";
+    } else {
+      statusText = `On track (${diff} days left)`;
+      color = "#10b981";
+    }
 
-  // =====================
-  // 🎯 SORT (important)
-  // =====================
-  const sorted = [...data.timeline].sort((a, b) => {
-    const order = { delayed: 0, "at-risk": 1, "on-track": 2 };
-    return order[a.status] - order[b.status];
-  });
+    // =====================
+    // 📊 PROGRESS
+    // =====================
+    let progress = task.progress ?? (
+      diff < 0 ? 100 :
+      diff <= 3 ? 60 : 30
+    );
 
-  // limit to avoid mess
-  const visible = sorted.slice(0, 8);
-
-  visible.forEach(task => {
-    const start = new Date(task.start || task.startDate || now);
-    const due   = new Date(task.due || task.dueDate || now);
-
-    const left = ((start - min) / total) * 100;
-    const width = ((due - start) / total) * 100;
-
-    let cls = "#10b981";
-    if (task.status === "delayed") cls = "#ef4444";
-    else if (task.status === "at-risk") cls = "#f59e0b";
-
+    // =====================
+    // 🧱 UI
+    // =====================
     el.insertAdjacentHTML("beforeend", `
-      <div class="gantt-row" style="margin-bottom:14px;">
+      <div class="gantt-row" style="
+        padding:10px;
+        border:1px solid var(--border);
+        border-radius:10px;
+        margin-bottom:10px;
+        background:var(--card);
+      ">
 
-        <!-- LABEL -->
-        <div style="display:flex; justify-content:space-between; font-size:13px;">
-          <div><strong>#${task.number}</strong> ${task.title}</div>
-          <div>${fmt(start)} → ${fmt(due)}</div>
+        <!-- TITLE -->
+        <div style="font-weight:600;">
+          #${task.number} ${task.title}
+        </div>
+
+        <!-- STATUS -->
+        <div style="font-size:12px; color:${color}; margin:4px 0;">
+          ${statusText}
         </div>
 
         <!-- BAR -->
         <div style="
-          position:relative;
-          height:18px;
+          height:8px;
           background:#e5e7eb;
-          border-radius:6px;
-          margin-top:6px;
+          border-radius:4px;
+          overflow:hidden;
         ">
-
           <div style="
-            position:absolute;
-            left:${left}%;
-            width:${width}%;
+            width:${progress}%;
+            background:${color};
             height:100%;
-            background:${cls};
-            border-radius:6px;
           "></div>
+        </div>
 
+        <!-- FOOTER -->
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          font-size:11px;
+          color:gray;
+          margin-top:4px;
+        ">
+          <div>${fmt(start)} → ${fmt(due)}</div>
+          <div>${progress}%</div>
         </div>
 
       </div>
     `);
   });
-
-  // =====================
-  // ➕ SHOW MORE
-  // =====================
-  if (data.timeline.length > 8) {
-    el.innerHTML += `
-      <div style="text-align:center; font-size:12px; color:gray;">
-        + ${data.timeline.length - 8} more tasks
-      </div>
-    `;
-  }
 }
 
 // =======================
