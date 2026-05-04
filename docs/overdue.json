@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T22:04:21.498Z",
+  "generatedAt": "2026-05-04T23:56:55.834Z",
   "overdueCount": 4,
   "urgentCount": 0,
   "topOverdue": [
@@ -55,7 +55,8 @@
       "dueDate": "2026-04-30T00:00:00.000Z",
       "progress": 100,
       "plannedProgress": 100,
-      "risk": 3,
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
       "daysOverdue": 5
     }
   ],
@@ -97,6 +98,20 @@
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
       "daysOverdue": 34
+    },
+    {
+      "number": 3,
+      "title": "Normal Task",
+      "repo": "potatoscript/portfolio-dashboard",
+      "url": "https://github.com/potatoscript/portfolio-dashboard/issues/3",
+      "user": "potatoscript",
+      "startDate": "2026-04-27T00:00:00.000Z",
+      "dueDate": "2026-04-30T00:00:00.000Z",
+      "progress": 100,
+      "plannedProgress": 100,
+      "risk": 5,
+      "prediction": "⚠️ Likely to miss deadline",
+      "daysOverdue": 5
     },
     {
       "number": 4,
