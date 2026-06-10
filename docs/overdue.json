@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T22:43:54.192Z",
+  "generatedAt": "2026-06-10T00:17:29.887Z",
   "overdueCount": 4,
   "urgentCount": 0,
   "topOverdue": [
@@ -15,7 +15,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 70
+      "daysOverdue": 71
     },
     {
       "number": 4,
@@ -29,7 +29,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 56
+      "daysOverdue": 57
     },
     {
       "number": 2,
@@ -43,7 +43,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 51
+      "daysOverdue": 52
     },
     {
       "number": 3,
@@ -57,7 +57,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 41
+      "daysOverdue": 42
     }
   ],
   "urgentItems": [],
@@ -83,7 +83,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 51
+      "daysOverdue": 52
     },
     {
       "number": 1,
@@ -97,7 +97,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 70
+      "daysOverdue": 71
     },
     {
       "number": 3,
@@ -111,7 +111,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 41
+      "daysOverdue": 42
     },
     {
       "number": 4,
@@ -125,7 +125,7 @@
       "plannedProgress": 100,
       "risk": 5,
       "prediction": "⚠️ Likely to miss deadline",
-      "daysOverdue": 56
+      "daysOverdue": 57
     }
   ],
   "timeline": [
